@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ARMAH - Afro & Amapiano driven DJ based in Hamburg, expanding internationally.">
+  <meta name="keywords" content="ARMAH, DJ, Afrobeat, Amapiano, Hamburg, Producer">
+  <meta name="author" content="Thierry Armah Thompson">
+  <meta name="theme-color" content="#000000">
+  <title>ARMAH | Afro & Amapiano DJ - Hamburg</title>
+  <link rel="icon" type="image/png" href="/assets/ARMAH_logo_transparent_white.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            armah: { black: '#000000', red: '#FB3640', purple: '#7C3AED' },
+          },
+          fontFamily: {
+            head: ['Anton', 'Oswald', 'Impact', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    :root { --bg: #000000; --red: #FB3640; --purple: #7C3AED; --font-head: 'Anton', 'Oswald', Impact, system-ui, sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: #ffffff; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+    .font-head { font-family: var(--font-head); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #000000; }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
+    ::selection { background: rgba(251, 54, 64, 0.3); color: #FFFFFF; }
+    .trusted-logo { transition: transform 0.25s ease, filter 0.25s ease, opacity 0.25s ease; }
+    .trusted-logo:hover { transform: scale(1.05); filter: drop-shadow(0 0 18px rgba(251, 54, 64, 0.35)); }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .red-bloom { position: absolute; inset: -20%; background: radial-gradient(circle, rgba(251, 54, 64, 0.25), transparent 60%); filter: blur(60px); pointer-events: none; }
+    .purple-bloom { position: absolute; inset: -20%; background: radial-gradient(circle, rgba(124, 58, 237, 0.15), transparent 60%); filter: blur(80px); pointer-events: none; }
+    .video-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .video-modal.active { display: flex; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body class="antialiased">
+  <!-- Navbar -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-black/75 backdrop-blur transition-all duration-300">
+    <nav class="mx-auto flex max-w-6xl items-center justify-center gap-4 sm:gap-8 px-4 py-4">
+      <div class="flex items-center gap-4 sm:gap-8">
+        <a href="#live" class="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head">Live</a>
+        <a href="#shows" class="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head">Shows</a>
+      </div>
+      <a href="#top" class="px-4 sm:px-8">
+        <img src="/assets/ARMAH_logo_transparent_white.png" alt="ARMAH logo" title="ARMAH" class="h-12 sm:h-16 w-auto drop-shadow-[0_0_14px_rgba(251,54,64,0.28)]">
+      </a>
+      <div class="flex items-center gap-4 sm:gap-8">
+        <a href="#producer" class="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head">Producer</a>
+        <a href="#booking" class="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head">Booking</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section id="top" class="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url(/assets/hero-bg.jpg)"></div>
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="red-bloom opacity-50"></div>
+    <div class="relative z-10 text-center px-6">
+      <h1 class="font-head text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white tracking-tight mb-6">ARMAH</h1>
+      <p class="text-white/80 text-lg sm:text-xl md:text-2xl tracking-wide max-w-2xl mx-auto mb-12">Afro & Amapiano driven DJ — Hamburg based, expanding internationally.</p>
+      <a href="#booking" class="inline-block bg-armah-red hover:bg-[#ff4d56] text-white font-head text-sm tracking-[0.2em] uppercase px-10 py-4 transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)]">Booking Inquiry</a>
+    </div>
+    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
+  </section>
+
+  <!-- Live -->
+  <section id="live" class="relative w-full bg-black py-24 md:py-32">
+    <div class="w-full px-6 lg:px-12 xl:px-24">
+      <div class="text-center mb-16">
+        <h2 class="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">Live Moments</h2>
+        <div class="w-20 h-0.5 bg-armah-red mt-6 mx-auto"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 01')">
+          <img src="/assets/amahh.png" alt="Live Clip 01" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+              <svg class="w-7 h-7 text-white ml-1" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 01</p></div>
+        </div>
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 02')">
+          <img src="/assets/roots.png" alt="Live Clip 02" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+              <svg class="w-7 h-7 text-white ml-1" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 02</p></div>
+        </div>
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 03')">
+          <img src="/assets/we outside.png" alt="Live Clip 03" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+              <svg class="w-7 h-7 text-white ml-1" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 03</p></div>
+        </div>
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 04')">
+          <img src="/assets/golden cut.png" alt="Live Clip 04" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+              <svg class="w-7 h-7 text-white ml-1" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 04</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent"></div>
+  </section>
+
+  <!-- Trusted Venues -->
+  <section class="relative w-full bg-black py-20 md:py-28">
+    <div class="w-full">
+      <div class="text-center mb-12 px-6">
+        <h2 class="font-head text-3xl md:text-4xl lg:text-5xl text-white tracking-tight uppercase">Trusted Venues</h2>
+        <div class="w-20 h-0.5 bg-armah-red mt-6 mx-auto"></div>
+      </div>
+      <div class="relative">
+        <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none"></div>
+        <button onclick="scrollTrusted('left')" class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 hover:bg-armah-red/20 border border-white/10 hover:border-armah-red/50 flex items-center justify-center text-white/60 hover:text-white transition-all duration-200">
+          <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button onclick="scrollTrusted('right')" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 hover:bg-armah-red/20 border border-white/10 hover:border-armah-red/50 flex items-center justify-center text-white/60 hover:text-white transition-all duration-200">
+          <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div id="trusted-scroll" class="flex gap-8 md:gap-12 overflow-x-auto scrollbar-hide px-20 md:px-32 py-8">
+          <a href="https://www.instagram.com/amapianohamburg/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/amahh.png" alt="Amapiano Hamburg" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">Amapiano Hamburg</span>
+          </a>
+          <a href="https://www.instagram.com/roots.entertainment/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/roots.png" alt="Roots Entertainment" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">Roots Entertainment</span>
+          </a>
+          <a href="https://www.instagram.com/weoutside/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/we outside.png" alt="We Outside" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">We Outside</span>
+          </a>
+          <a href="https://www.instagram.com/goldencut/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/golden cut.png" alt="Golden Cut" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">Golden Cut</span>
+          </a>
+          <a href="https://www.instagram.com/yoto/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/yoto 2.png" alt="YOTO" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">YOTO</span>
+          </a>
+          <a href="https://www.instagram.com/queensandclouds/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/queens and clouds.png" alt="Queens & Clouds" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">Queens & Clouds</span>
+          </a>
+          <a href="https://www.instagram.com/bricks.berlin/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/Bricks.png" alt="BRICKS Berlin" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">BRICKS Berlin</span>
+          </a>
+          <a href="https://www.instagram.com/footlocker/" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 flex flex-col items-center gap-4 group">
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"><img src="/assets/footlocker.png" alt="Foot Locker" loading="lazy" class="trusted-logo max-w-full max-h-full object-contain" style="filter: grayscale(100%) brightness(2)" onmouseenter="this.style.filter='grayscale(0%) brightness(1)'" onmouseleave="this.style.filter='grayscale(100%) brightness(2)'"></div>
+            <span class="text-white/50 text-xs md:text-sm tracking-wide text-center group-hover:text-white/80 transition-colors">Foot Locker</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent"></div>
+  </section>
+
+  <!-- Selected Shows -->
+  <section id="shows" class="relative w-full bg-black py-24 md:py-32">
+    <div class="w-full px-6 lg:px-12 xl:px-24">
+      <div class="text-center mb-16">
+        <h2 class="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">Selected Shows</h2>
+        <div class="w-20 h-0.5 bg-armah-red mt-6 mx-auto"></div>
+      </div>
+      <div class="max-w-4xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">We Outside</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">Golden Cut</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">YOTO</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">L'Atelier Studios</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">Queens & Clouds</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">BRICKS Berlin</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">Afro Slot</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">Foot Locker</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">Enchanted</p></div>
+          <div class="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300"><p class="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">Monteezy's World</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent"></div>
+  </section>
+
+  <!-- Producer -->
+  <section id="producer" class="relative w-full bg-black py-24 md:py-32 overflow-hidden">
+    <div class="purple-bloom opacity-70"></div>
+    <div class="relative z-10 w-full px-6 lg:px-12 xl:px-24">
+      <div class="text-center mb-6">
+        <h2 class="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">Producer</h2>
+        <div class="w-20 h-0.5 bg-armah-purple mt-6 mx-auto"></div>
+      </div>
+      <div class="text-center mb-16">
+        <p class="text-white/60 text-lg md:text-xl tracking-wide">Current collaboration: <span class="text-white font-medium">Stephen Jounior</span></p>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            <span class="text-white/80 text-sm font-medium tracking-wide">Spotify</span>
+          </div>
+          <div class="relative rounded-lg overflow-hidden bg-white/5">
+            <iframe style="border-radius: 12px" src="https://open.spotify.com/embed/track/4OHgaDZPsAemSCikAgFKqr" width="100%" height="152" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="ARMAH Track 1"></iframe>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            <span class="text-white/80 text-sm font-medium tracking-wide">Spotify</span>
+          </div>
+          <div class="relative rounded-lg overflow-hidden bg-white/5">
+            <iframe style="border-radius: 12px" src="https://open.spotify.com/embed/track/38ZFS6DGwTP6BL0mEVUEdI" width="100%" height="152" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="ARMAH Track 2"></iframe>
+          </div>
+        </div>
+        <div class="relative lg:col-span-2 max-w-2xl mx-auto w-full">
+          <div class="flex items-center gap-3 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            <span class="text-white/80 text-sm font-medium tracking-wide">Spotify</span>
+          </div>
+          <div class="relative rounded-lg overflow-hidden bg-white/5">
+            <iframe style="border-radius: 12px" src="https://open.spotify.com/embed/track/3Mf5jsUc30w9PAfrM5LWvK" width="100%" height="152" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="ARMAH Track 3"></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-center gap-6 mt-12">
+        <a href="#" class="inline-flex items-center gap-2 text-white/50 hover:text-armah-purple text-sm tracking-wide transition-colors duration-200" onclick="event.preventDefault()">SoundCloud<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+        <a href="#" class="inline-flex items-center gap-2 text-white/50 hover:text-armah-purple text-sm tracking-wide transition-colors duration-200" onclick="event.preventDefault()">BeatStars<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+        <a href="#" class="inline-flex items-center gap-2 text-white/50 hover:text-armah-purple text-sm tracking-wide transition-colors duration-200" onclick="event.preventDefault()">YouTube<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-purple/30 to-transparent"></div>
+  </section>
+
+  <!-- Instagram -->
+  <section class="relative w-full bg-black py-24 md:py-32">
+    <div class="w-full px-6 lg:px-12 xl:px-24">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
+        <div>
+          <h2 class="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">Instagram</h2>
+          <div class="w-20 h-0.5 bg-armah-red mt-6"></div>
+        </div>
+        <a href="https://www.instagram.com/prodbyarmah/" target="_blank" rel="noopener noreferrer" class="mt-6 md:mt-0 inline-flex items-center gap-3 text-white/70 hover:text-armah-red transition-colors duration-200 group">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke-width="2"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="2"/></svg>
+          <span class="text-sm tracking-wide">@prodbyarmah</span>
+          <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="instagram-grid">
+        <!-- Instagram embeds will load here -->
+        <div class="flex justify-center">
+          <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/prodbyarmah/" data-instgrm-version="14" style="background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; max-width: 540px; min-width: 326px; padding: 0; width: 100%;"></blockquote>
+        </div>
+      </div>
+      <div class="text-center mt-10">
+        <a href="https://www.instagram.com/prodbyarmah/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-white/60 hover:text-armah-red text-sm tracking-wide transition-colors duration-200">
+          <span>View more on Instagram</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent"></div>
+    <script async src="https://www.instagram.com/embed.js"></script>
+  </section>
+
+  <!-- Booking -->
+  <section id="booking" class="relative w-full bg-black py-24 md:py-32">
+    <div class="w-full px-6 lg:px-12 xl:px-24">
+      <div class="text-center mb-16">
+        <h2 class="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">Booking Inquiry</h2>
+        <div class="w-20 h-0.5 bg-armah-red mt-6 mx-auto"></div>
+      </div>
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-12">
+          <a href="mailto:prodbyarmah@gmail.com" class="inline-flex items-center gap-4 text-white hover:text-armah-red transition-colors duration-200 group">
+            <div class="w-12 h-12 rounded-full bg-armah-red/10 flex items-center justify-center group-hover:bg-armah-red/20 transition-colors duration-200">
+              <svg class="w-5 h-5 text-armah-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <span class="text-xl md:text-2xl font-medium tracking-wide">prodbyarmah@gmail.com</span>
+          </a>
+          <p class="text-white/50 text-sm mt-4">For bookings, collaborations and appearances.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 mb-12">
+          <button onclick="alert('Technical Rider coming soon')" class="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-sm tracking-wide">Technical Rider</span>
+          </button>
+          <button onclick="alert('Hospitality Rider coming soon')" class="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-sm tracking-wide">Hospitality Rider</span>
+          </button>
+        </div>
+        <form action="mailto:prodbyarmah@gmail.com" method="post" enctype="text/plain" class="space-y-6" onsubmit="return handleSubmit(event)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div><label for="name" class="block text-white/70 text-sm mb-2">Name</label><input type="text" id="name" name="name" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200" placeholder="Your name"/></div>
+            <div><label for="email" class="block text-white/70 text-sm mb-2">Email</label><input type="email" id="email" name="email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200" placeholder="your@email.com"/></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div><label for="eventType" class="block text-white/70 text-sm mb-2">Event Type</label><select id="eventType" name="eventType" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-armah-red focus:outline-none transition-colors duration-200 appearance-none cursor-pointer"><option value="" class="bg-black">Select type</option><option value="club" class="bg-black">Club Show</option><option value="festival" class="bg-black">Festival</option><option value="private" class="bg-black">Private Event</option><option value="corporate" class="bg-black">Corporate</option><option value="other" class="bg-black">Other</option></select></div>
+            <div><label for="location" class="block text-white/70 text-sm mb-2">Location</label><input type="text" id="location" name="location" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200" placeholder="City, Country"/></div>
+          </div>
+          <div><label for="message" class="block text-white/70 text-sm mb-2">Message</label><textarea id="message" name="message" required rows="5" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200 resize-none" placeholder="Tell us about your event..."></textarea></div>
+          <button type="submit" class="w-full bg-armah-red hover:bg-[#ff4d56] text-white font-head px-8 py-4 text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)] flex items-center justify-center gap-3">
+            <span>Send Inquiry</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          </button>
+        </form>
+        <div id="form-success" class="hidden text-center py-16">
+          <div class="w-16 h-16 rounded-full bg-armah-red flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h3 class="text-2xl font-head text-white mb-2 uppercase">Message Sent</h3>
+          <p class="text-white/60">We will get back to you soon.</p>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative w-full bg-black pt-16 pb-8">
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/50 to-transparent"></div>
+    <div class="w-full px-6 lg:px-12 xl:px-24">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+          <div class="text-center md:text-left">
+            <img src="/assets/ARMAH_logo_transparent_white.png" alt="ARMAH" class="h-8 w-auto mx-auto md:mx-0 mb-4 object-contain">
+            <p class="text-white/50 text-sm tracking-wide">Built in rhythm. Played worldwide.</p>
+          </div>
+          <div class="text-center">
+            <h4 class="text-white font-head mb-4 tracking-wide uppercase">Navigation</h4>
+            <ul class="space-y-2">
+              <li><a href="#live" class="text-white/50 hover:text-armah-red text-sm transition-colors duration-200">Live</a></li>
+              <li><a href="#shows" class="text-white/50 hover:text-armah-red text-sm transition-colors duration-200">Shows</a></li>
+              <li><a href="#producer" class="text-white/50 hover:text-armah-red text-sm transition-colors duration-200">Producer</a></li>
+              <li><a href="#booking" class="text-white/50 hover:text-armah-red text-sm transition-colors duration-200">Booking</a></li>
+            </ul>
+          </div>
+          <div class="text-center md:text-right">
+            <h4 class="text-white font-head mb-4 tracking-wide uppercase">Connect</h4>
+            <div class="flex items-center justify-center md:justify-end gap-4">
+              <a href="https://www.instagram.com/prodbyarmah/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-armah-red/20 flex items-center justify-center text-white/60 hover:text-armah-red transition-all duration-200" aria-label="Instagram">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke-width="2"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-width="2"/></svg>
+              </a>
+              <a href="https://open.spotify.com" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-armah-red/20 flex items-center justify-center text-white/60 hover:text-armah-red transition-all duration-200" aria-label="Spotify">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+              </a>
+              <a href="mailto:prodbyarmah@gmail.com" class="w-10 h-10 rounded-full bg-white/5 hover:bg-armah-red/20 flex items-center justify-center text-white/60 hover:text-armah-red transition-all duration-200" aria-label="Email">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="w-full h-px bg-white/10 mb-8"></div>
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-6">
+            <a href="/legal/impressum.html" class="text-white/40 hover:text-armah-red text-sm transition-colors duration-200">Impressum</a>
+            <a href="/legal/datenschutz.html" class="text-white/40 hover:text-armah-red text-sm transition-colors duration-200">Datenschutz</a>
+          </div>
+          <p class="text-white/30 text-sm">&copy; 2025 ARMAH. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Video Modal -->
+  <div id="video-modal" class="video-modal" onclick="closeVideo()">
+    <div class="relative w-full max-w-5xl aspect-video bg-black" onclick="event.stopPropagation()">
+      <button onclick="closeVideo()" class="absolute -top-12 right-0 text-white/80 hover:text-white transition-colors">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <div id="video-container" class="w-full h-full flex items-center justify-center">
+        <p class="text-white/60 text-center">Video coming soon</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('bg-black/90', 'border-b', 'border-white/5');
+        navbar.classList.remove('bg-black/75');
+      } else {
+        navbar.classList.remove('bg-black/90', 'border-b', 'border-white/5');
+        navbar.classList.add('bg-black/75');
+      }
+    });
+
+    // Trusted carousel scroll
+    function scrollTrusted(direction) {
+      const container = document.getElementById('trusted-scroll');
+      const scrollAmount = direction === 'left' ? -320 : 320;
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+
+    // Video modal
+    function openVideo(title) {
+      const modal = document.getElementById('video-modal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeVideo() {
+      const modal = document.getElementById('video-modal');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Form submission
+    function handleSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const success = document.getElementById('form-success');
+      
+      // Create mailto link
+      const name = form.name.value;
+      const email = form.email.value;
+      const eventType = form.eventType.value;
+      const location = form.location.value;
+      const message = form.message.value;
+      
+      const subject = encodeURIComponent(`Booking Inquiry from ${name}`);
+      const body = encodeURIComponent(
+        `Name: ${name}\n` +
+        `Email: ${email}\n` +
+        `Event Type: ${eventType || 'Not specified'}\n` +
+        `Location: ${location || 'Not specified'}\n\n` +
+        `Message:\n${message}`
+      );
+      
+      window.location.href = `mailto:prodbyarmah@gmail.com?subject=${subject}&body=${body}`;
+      
+      form.classList.add('hidden');
+      success.classList.remove('hidden');
+      
+      return false;
+    }
+  </script>
+</body>
+</html>
