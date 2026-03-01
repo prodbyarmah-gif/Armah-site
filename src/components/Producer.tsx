@@ -51,7 +51,7 @@ export default function Producer() {
 
         {/* Spotify Embeds */}
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          {producerTracks.map((track, index) => (
+          {producerTracks.map((track) => (
             <div key={track.id} className="relative">
               <div className="flex items-center gap-3 mb-4">
                 <Music className="w-5 h-5 text-[#1DB954]" />
