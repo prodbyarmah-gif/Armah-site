@@ -51,6 +51,14 @@ export default function Live() {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState({ url: '', title: '' });
 
+  // hardcoded video sources for live moments cards
+  const videoSources = [
+    'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01_web.mp4',
+    'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02_web.mp4',
+    'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03_signature_smaller.mp4',
+    'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04_web.mp4',
+  ];
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -110,11 +118,12 @@ export default function Live() {
                 style={{ animationDelay: `${index * 100}ms` }}
                 onClick={() => openVideo(clip.videoUrl, clip.title)}
               >
-                {/* Thumbnail */}
-                <img
-                  src={clip.thumbnail}
-                  alt={clip.title}
-                  loading="lazy"
+                {/* Video element replacing thumbnail */}
+                <video
+                  src={videoSources[index]}
+                  controls
+                  playsInline
+                  preload="metadata"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 
