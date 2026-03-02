@@ -22,25 +22,25 @@ export const liveClips = [
   {
     id: "01",
     title: "Live Clip 01",
-    videoUrl: "", // Add Cloudflare URL here
+    videoUrl: "https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01_web.mp4",
     thumbnail: "/assets/amahh.png",
   },
   {
     id: "02",
     title: "Live Clip 02",
-    videoUrl: "", // Add Cloudflare URL here
+    videoUrl: "https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02_web.mp4",
     thumbnail: "/assets/roots.png",
   },
   {
     id: "03",
     title: "Live Clip 03",
-    videoUrl: "", // Add Cloudflare URL here
+    videoUrl: "https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03_signature_smaller.mp4",
     thumbnail: "/assets/we outside.png",
   },
   {
     id: "04",
     title: "Live Clip 04",
-    videoUrl: "", // Add Cloudflare URL here
+    videoUrl: "https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04_web.mp4",
     thumbnail: "/assets/golden cut.png",
   },
 ];
