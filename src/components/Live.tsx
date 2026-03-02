@@ -37,9 +37,21 @@ function VideoModal({ isOpen, clip, onClose }: VideoModalProps) {
   return (
     <div className="video-modal-overlay" onClick={onClose}>
       <div 
-        className="relative w-full max-w-5xl h-[80vh] bg-black"
+        className="relative w-full max-w-[90vw] lg:max-w-5xl h-[80vh] max-h-[80vh] bg-black"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* background layer using same video, blurred and scaled */}
+        <video
+          src={clip.videoUrl}
+          muted
+          playsInline
+          loop
+          autoPlay
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-30 pointer-events-none z-0"
+          // background is decorative only
+        />
+
         <button
           onClick={onClose}
           className="absolute -top-12 right-0 text-white/80 hover:text-white transition-colors"
@@ -52,7 +64,7 @@ function VideoModal({ isOpen, clip, onClose }: VideoModalProps) {
           controls
           playsInline
           preload="metadata"
-          className="w-auto h-full max-w-full max-h-full object-contain"
+          className="relative z-10 w-auto h-full max-w-[90vw] max-h-[80vh] object-contain"
         >
           <source src={clip.videoUrl} type="video/mp4" />
         </video>
@@ -158,7 +170,7 @@ export default function Live() {
                   muted
                   playsInline
                   preload="metadata"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                   style={{ pointerEvents: 'none' }}
                 />
                 
