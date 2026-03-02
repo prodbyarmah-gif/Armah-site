@@ -87,7 +87,7 @@
         <div class="w-20 h-0.5 bg-armah-red mt-6 mx-auto"></div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 01')">
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 01','https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01_web.mp4')">
           <img src="/assets/amahh.png" alt="Live Clip 01" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
           <div class="absolute inset-0 flex items-center justify-center">
@@ -97,7 +97,7 @@
           </div>
           <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 01</p></div>
         </div>
-        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 02')">
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 02','https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02_web.mp4')">
           <img src="/assets/roots.png" alt="Live Clip 02" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
           <div class="absolute inset-0 flex items-center justify-center">
@@ -107,7 +107,7 @@
           </div>
           <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 02</p></div>
         </div>
-        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 03')">
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 03','https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03_signature_smaller.mp4')">
           <img src="/assets/we outside.png" alt="Live Clip 03" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
           <div class="absolute inset-0 flex items-center justify-center">
@@ -117,7 +117,7 @@
           </div>
           <div class="absolute bottom-4 left-4 right-4"><p class="text-white/80 text-sm font-medium tracking-wide">Live Clip 03</p></div>
         </div>
-        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 04')">
+        <div class="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group" onclick="openVideo('Live Clip 04','https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04_web.mp4')">
           <img src="/assets/golden cut.png" alt="Live Clip 04" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300"></div>
           <div class="absolute inset-0 flex items-center justify-center">
@@ -399,7 +399,16 @@
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
       <div id="video-container" class="w-full h-full flex items-center justify-center">
-        <p class="text-white/60 text-center">Video coming soon</p>
+        <video
+          id="modal-video"
+          class="w-full h-full max-w-[90vw] max-h-[80vh]"
+          controls
+          playsinline
+          preload="metadata"
+        >
+          <source id="modal-video-source" src="" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
     </div>
   </div>
@@ -425,14 +434,34 @@
     }
 
     // Video modal
-    function openVideo(title) {
+    function openVideo(title, url) {
       const modal = document.getElementById('video-modal');
+      const video = document.getElementById('modal-video');
+      const source = document.getElementById('modal-video-source');
+
+      // Set source + load
+      if (source) source.src = url || '';
+      if (video) {
+        video.load();
+        // Try to play (may be blocked until user taps play, which is fine)
+        video.play().catch(() => {});
+      }
+
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
 
     function closeVideo() {
       const modal = document.getElementById('video-modal');
+      const video = document.getElementById('modal-video');
+      const source = document.getElementById('modal-video-source');
+
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
+      if (source) source.src = '';
+
       modal.classList.remove('active');
       document.body.style.overflow = '';
     }
