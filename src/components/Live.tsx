@@ -96,7 +96,9 @@ export default function Live() {
                     playsInline
                     preload="metadata"
                     autoPlay
-                    className="w-full h-full object-contain bg-black"
+                    className="w-full h-full !object-contain bg-black"
+                    style={{ objectFit: 'contain' }}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <source src={clip.videoUrl} type="video/mp4" />
                   </video>
@@ -121,8 +123,8 @@ export default function Live() {
                       muted
                       playsInline
                       preload="metadata"
-                      className="relative z-10 w-full h-full object-contain pointer-events-none"
-                      style={{ pointerEvents: 'none' }}
+                      className="relative z-10 w-full h-full !object-contain pointer-events-none"
+                      style={{ pointerEvents: 'none', objectFit: 'contain' }}
                     />
                     
                     {/* Overlay */}
@@ -154,4 +156,3 @@ export default function Live() {
     </section>
   );
 }
-
