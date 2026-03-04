@@ -11,8 +11,9 @@ interface Clip {
 
 export default function Live() {
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [activeClipId, setActiveClipId] = useState<string | null>(null);
+  const [selectedClipId, setSelectedClipId] = useState<string>('01');
 
   // clip definitions with R2 video URLs and local posters
   const clips: Clip[] = [
@@ -42,6 +43,8 @@ export default function Live() {
     },
   ];
 
+  const selectedClip = clips.find(clip => clip.id === selectedClipId) || clips[0];
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -60,17 +63,16 @@ export default function Live() {
     return () => observer.disconnect();
   }, []);
 
-
-  const toggleClip = (clipId: string) => {
-    if (activeClipId === clipId) {
-      setActiveClipId(null);
-    } else {
-      setActiveClipId(clipId);
+  // Autoplay and reset when selectedClipId changes
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
     }
-  };
+  }, [selectedClipId]);
 
-  const handleCardClick = (clip: Clip) => {
-    toggleClip(clip.id);
+  const handlePreviewClick = (clipId: string) => {
+    setSelectedClipId(clipId);
   };
 
   return (
@@ -88,70 +90,74 @@ export default function Live() {
           <div className="w-20 h-0.5 bg-armah-red mt-6 mx-auto" />
         </div>
 
-        {/* Video Grid */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          {clips.map((clip, index) => {
-            const isActive = activeClipId === clip.id;
-            return (
-              <div
-                key={clip.id}
-                className="relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group"
-                style={{ animationDelay: `${index * 100}ms` }}
-                onClick={() => handleCardClick(clip)}
+        {/* Player + Playlist Layout */}
+        <div className={`grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          
+          {/* Main Player */}
+          <div className="relative">
+            <div className="relative aspect-video bg-black overflow-hidden rounded-lg">
+              <video
+                ref={videoRef}
+                controls
+                playsInline
+                preload="metadata"
+                autoPlay
+                poster={selectedClip.posterUrl}
+                disablePictureInPicture
+                disableRemotePlayback
+                controlsList="nodownload noplaybackrate"
+                className="w-full h-full object-contain"
               >
-                {isActive ? (
-                  // Active inline player
-                  <div className="absolute inset-0">
-                    <video
-                      controls
-                      playsInline
-                      preload="metadata"
-                      autoPlay
-                      className="w-full h-full bg-black object-contain"
-                      style={{ objectFit: 'contain' }}
-                      muted={false}
-                      disablePictureInPicture
-                      disableRemotePlayback
-                      controlsList="nodownload noplaybackrate nofullscreen"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <source src={clip.videoUrl} type="video/mp4" />
-                    </video>
-                  </div>
-                ) : (
-                  // Thumbnail preview
-                  <>
-                    <video
-                      src={clip.videoUrl}
-                      poster={clip.posterUrl}
-                      muted
-                      playsInline
-                      preload="none"
-                      className="w-full h-full object-cover object-top"
-                      style={{ pointerEvents: 'none' }}
-                    />
+                <source src={selectedClip.videoUrl} type="video/mp4" />
+              </video>
+            </div>
+            <p className="text-white/80 text-sm font-medium tracking-wide mt-4">
+              {selectedClip.title}
+            </p>
+          </div>
 
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-20" />
-                    
-                    {/* Play Button */}
-                    <div className="absolute inset-0 flex items-center justify-center z-30">
-                      <div className="w-16 h-16 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
-                        <Play className="w-7 h-7 text-white ml-1" fill="white" />
-                      </div>
+          {/* Preview Cards Grid (2x2) */}
+          <div className="grid grid-cols-2 gap-4">
+            {clips.map((clip) => {
+              const isSelected = clip.id === selectedClipId;
+              return (
+                <div
+                  key={clip.id}
+                  className={`relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 ${
+                    isSelected ? 'ring-2 ring-armah-red' : 'hover:ring-1 hover:ring-armah-red/50'
+                  }`}
+                  onClick={() => handlePreviewClick(clip.id)}
+                >
+                  {/* Preview Thumbnail */}
+                  <video
+                    src={clip.videoUrl}
+                    poster={clip.posterUrl}
+                    muted
+                    playsInline
+                    preload="none"
+                    className="w-full h-full object-cover object-top pointer-events-none"
+                  />
+
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-10" />
+                  
+                  {/* Play Button */}
+                  <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <div className="w-12 h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+                      <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
                     </div>
-                  </>
-                )}
-                
-                {/* Title */}
-                <div className="absolute bottom-4 left-4 right-4 z-40">
-                  <p className="text-white/80 text-sm font-medium tracking-wide">
-                    {clip.title}
-                  </p>
+                  </div>
+                  
+                  {/* Title */}
+                  <div className="absolute bottom-3 left-3 right-3 z-30">
+                    <p className="text-white/80 text-xs font-medium tracking-wide truncate">
+                      {clip.title}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -160,3 +166,4 @@ export default function Live() {
     </section>
   );
 }
+

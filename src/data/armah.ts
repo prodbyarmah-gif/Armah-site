@@ -57,18 +57,18 @@ export const trustedEvents = [
   { name: "Foot Locker", logo: "/assets/footlocker.png", url: "https://www.instagram.com/footlocker/" },
 ];
 
-// Selected shows list
+// Selected shows list with Instagram links
 export const selectedShows = [
-  "We Outside",
-  "Golden Cut",
-  "YOTO",
-  "L'Atelier Studios",
-  "Queens & Clouds",
-  "BRICKS Berlin",
-  "Afro Slot",
-  "Foot Locker",
-  "Enchanted",
-  "Monteezy's World",
+  { label: "We Outside", url: "https://www.instagram.com/p/DMNCUSps_HX/?igsh=MmZvM3JwYjJ2Y2Zi" },
+  { label: "Golden Cut", url: "https://www.instagram.com/p/DLVG2yqN0M_/?img_index=1&igsh=MTU2Z2kwazJ0OGdtaQ==" },
+  { label: "Enchanted", url: "https://www.instagram.com/reel/DKG7FHmCg-9/?igsh=MTVyM2pjY29lYnl5Zg==" },
+  { label: "Afro Slot", url: "https://www.instagram.com/reel/DI1dj7YsIKO/?igsh=MWVhY2poazZoN2Vrdg==" },
+  { label: "YOTO", url: "https://www.instagram.com/reel/DPQoM9ijZEV/?igsh=dm90MmVoYXNzOG9i" },
+  { label: "KDK", url: "https://www.instagram.com/reel/DJr3PfwsX8f/?igsh=MWkwMzR5YjMydXA1NA==" },
+  { label: "L'Atelier Studios", url: "https://www.instagram.com/reel/DMqgXDdMFe3/?igsh=MW9qbTA0M3A1czVucQ==" },
+  { label: "Queens & Clouds", url: "https://www.instagram.com/p/DPG1ox_CHj7/?igsh=eDBkcnJudWpqOWRh" },
+  { label: "Foot Locker", url: "https://www.instagram.com/p/DQHgyKVCkab/?img_index=2&igsh=dmNveWZ1c3Z4NGZl" },
+  { label: "Monteezy's World", url: "https://www.instagram.com/reel/DOWbwTkjPzo/?igsh=MXVydGVpaHF2ZjNtdQ==" },
 ];
 
 // Spotify tracks for Producer section
