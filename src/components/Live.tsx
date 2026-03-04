@@ -76,8 +76,8 @@ export default function Live() {
   };
 
   return (
-    <section 
-      id="live" 
+    <section
+      id="live"
       ref={sectionRef}
       className="relative w-full bg-black py-24 md:py-32"
     >
@@ -92,7 +92,6 @@ export default function Live() {
 
         {/* Player + Playlist Layout */}
         <div className={`grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          
           {/* Main Player */}
           <div className="relative">
             <div className="relative aspect-video bg-black overflow-hidden rounded-lg">
@@ -129,25 +128,23 @@ export default function Live() {
                   onClick={() => handlePreviewClick(clip.id)}
                 >
                   {/* Preview Thumbnail */}
-                  <video
-                    src={clip.videoUrl}
-                    poster={clip.posterUrl}
-                    muted
-                    playsInline
-                    preload="none"
+                  <img
+                    src={clip.posterUrl}
+                    alt={clip.title}
+                    loading="lazy"
                     className="w-full h-full object-cover object-top pointer-events-none"
                   />
 
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-10" />
-                  
+
                   {/* Play Button */}
                   <div className="absolute inset-0 flex items-center justify-center z-20">
                     <div className="w-12 h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
                       <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
                     </div>
                   </div>
-                  
+
                   {/* Title */}
                   <div className="absolute bottom-3 left-3 right-3 z-30">
                     <p className="text-white/80 text-xs font-medium tracking-wide truncate">
@@ -166,4 +163,3 @@ export default function Live() {
     </section>
   );
 }
-
