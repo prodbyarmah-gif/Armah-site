@@ -107,10 +107,13 @@ export default function Live() {
                       playsInline
                       preload="metadata"
                       autoPlay
-                      className="w-full h-full object-contain bg-black"
+                      className="w-full h-full bg-black object-contain"
+                      style={{ objectFit: 'contain' }}
+                      muted={false}
                       disablePictureInPicture
                       disableRemotePlayback
-                      controlsList="nodownload noplaybackrate"
+                      controlsList="nodownload noplaybackrate nofullscreen"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <source src={clip.videoUrl} type="video/mp4" />
                     </video>
