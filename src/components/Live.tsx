@@ -9,93 +9,36 @@ interface Clip {
   posterUrl: string;
 }
 
-interface VideoModalProps {
-  isOpen: boolean;
-  clip: Clip | null;
-  onClose: () => void;
-}
-
-function VideoModal({ isOpen, clip, onClose }: VideoModalProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      videoRef.current?.play().catch(() => {});
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen && videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-    }
-  }, [isOpen]);
-
-  if (!isOpen || !clip) return null;
-
-  return (
-    <div className="video-modal-overlay" onClick={onClose}>
-      <div
-        className="relative w-full max-w-[90vw] lg:max-w-5xl h-[80vh] max-h-[80vh] bg-black"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* background visual layer */}
-        <video
-          src={clip.videoUrl}
-          muted
-          playsInline
-          loop
-          autoPlay
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-30 pointer-events-none z-0"
-        />
-        <video
-          ref={videoRef}
-          controls
-          playsInline
-          preload="metadata"
-          className="relative z-10 w-auto h-full max-w-[90vw] max-h-[80vh] object-contain"
-        >
-          <source src={clip.videoUrl} type="video/mp4" />
-        </video>
-      </div>
-    </div>
-  );
-}
-
 export default function Live() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [activeClipId, setActiveClipId] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
 
-  // clip definitions with R2 video URLs
+  // clip definitions with R2 video URLs and local posters
   const clips: Clip[] = [
     {
       id: '01',
       title: 'Live Clip 01',
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01_web.mp4',
-      posterUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01.jpg',
+      posterUrl: '/assets/live01.jpg',
     },
     {
       id: '02',
       title: 'Live Clip 02',
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02_web.mp4',
-      posterUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02.jpg',
+      posterUrl: '/assets/live02.jpg',
     },
     {
       id: '03',
       title: 'Live Clip 03',
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03_signature_smaller.mp4',
-      posterUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03.jpg',
+      posterUrl: '/assets/live03.jpg',
     },
     {
       id: '04',
       title: 'Live Clip 04',
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04_web.mp4',
-      posterUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04.jpg',
+      posterUrl: '/assets/live04.jpg',
     },
   ];
 
@@ -117,14 +60,6 @@ export default function Live() {
     return () => observer.disconnect();
   }, []);
 
-  // track viewport size for mobile/desktop behavior
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
 
   const toggleClip = (clipId: string) => {
     if (activeClipId === clipId) {
@@ -135,12 +70,7 @@ export default function Live() {
   };
 
   const handleCardClick = (clip: Clip) => {
-    if (isMobile) {
-      toggleClip(clip.id);
-    } else {
-      setSelectedClip(clip);
-      setModalOpen(true);
-    }
+    toggleClip(clip.id);
   };
 
   return (
@@ -161,7 +91,7 @@ export default function Live() {
         {/* Video Grid */}
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           {clips.map((clip, index) => {
-            const isActive = isMobile && activeClipId === clip.id;
+            const isActive = activeClipId === clip.id;
             return (
               <div
                 key={clip.id}
@@ -170,17 +100,21 @@ export default function Live() {
                 onClick={() => handleCardClick(clip)}
               >
                 {isActive ? (
-                  // Inline active player (mobile only)
-                  <video
-                    controls
-                    playsInline
-                    preload="metadata"
-                    autoPlay
-                    className="w-full h-full object-contain bg-black"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <source src={clip.videoUrl} type="video/mp4" />
-                  </video>
+                  // Active inline player
+                  <div className="absolute inset-0">
+                    <video
+                      controls
+                      playsInline
+                      preload="metadata"
+                      autoPlay
+                      className="w-full h-full object-contain bg-black"
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      controlsList="nodownload noplaybackrate"
+                    >
+                      <source src={clip.videoUrl} type="video/mp4" />
+                    </video>
+                  </div>
                 ) : (
                   // Thumbnail preview
                   <>
@@ -220,13 +154,6 @@ export default function Live() {
 
       {/* Decorative Line */}
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent" />
-      {!isMobile && (
-        <VideoModal
-          isOpen={modalOpen}
-          clip={selectedClip}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
     </section>
   );
 }
