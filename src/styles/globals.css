@@ -69,6 +69,8 @@ body {
   filter: drop-shadow(0 0 18px rgba(251, 54, 64, 0.35));
 }
 
+/* Video Modal Overlay */
+
 /* Scrollbar Hide for Carousel */
 .scrollbar-hide {
   -ms-overflow-style: none;
