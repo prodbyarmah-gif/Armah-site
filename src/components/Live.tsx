@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play } from 'lucide-react';
 
-// clip type used locally in this component
 interface Clip {
   id: string;
   title: string;
@@ -14,8 +13,8 @@ export default function Live() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedClipId, setSelectedClipId] = useState<string>('01');
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  // clip definitions with R2 video URLs and local posters
   const clips: Clip[] = [
     {
       id: '01',
@@ -43,7 +42,7 @@ export default function Live() {
     },
   ];
 
-  const selectedClip = clips.find(clip => clip.id === selectedClipId) || clips[0];
+  const selectedClip = clips.find((clip) => clip.id === selectedClipId) || clips[0];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -63,27 +62,68 @@ export default function Live() {
     return () => observer.disconnect();
   }, []);
 
-  // Autoplay and reset when selectedClipId changes
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
+    const handleVisibility = () => {
+      const v = videoRef.current;
+      if (!v) return;
+
+      // When the tab/page is hidden (sleep, lock screen, tab switch), pause so it won't resume unexpectedly.
+      if (document.hidden) {
+        try {
+          v.pause();
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', handleVisibility);
+    window.addEventListener('blur', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handleVisibility);
+      window.removeEventListener('blur', handleVisibility);
+    };
+  }, []);
+
+  // Force the main player to actually switch sources across browsers
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    // Set src explicitly (more reliable than <source> swapping across browsers)
+    v.pause();
+    v.currentTime = 0;
+    v.src = selectedClip.videoUrl;
+
+    try {
+      v.load();
+
+      // Only autoplay when the user has interacted (e.g. clicked a preview).
+      if (hasUserInteracted) {
+        v.play().catch(() => {});
+      }
+    } catch {
+      // ignore
     }
-  }, [selectedClipId]);
+  }, [selectedClip.videoUrl, hasUserInteracted]);
 
   const handlePreviewClick = (clipId: string) => {
+    if (!hasUserInteracted) setHasUserInteracted(true);
     setSelectedClipId(clipId);
   };
 
   return (
-    <section
-      id="live"
-      ref={sectionRef}
-      className="relative w-full bg-black py-24 md:py-32"
-    >
+    <section id="live" ref={sectionRef} className="relative w-full bg-black py-24 md:py-32">
       <div className="w-full px-6 lg:px-12 xl:px-24">
         {/* Section Title */}
-        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`text-center mb-16 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">
             Live Moments
           </h2>
@@ -91,28 +131,30 @@ export default function Live() {
         </div>
 
         {/* Player + Playlist Layout */}
-        <div className={`grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 transition-all duration-700 delay-200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           {/* Main Player */}
           <div className="relative">
             <div className="relative aspect-video bg-black overflow-hidden rounded-lg">
               <video
+                key={selectedClipId}
                 ref={videoRef}
                 controls
                 playsInline
                 preload="metadata"
-                autoPlay
                 poster={selectedClip.posterUrl}
                 disablePictureInPicture
                 disableRemotePlayback
                 controlsList="nodownload noplaybackrate"
                 className="w-full h-full object-contain"
-              >
-                <source src={selectedClip.videoUrl} type="video/mp4" />
-              </video>
+                src={selectedClip.videoUrl}
+                onPlay={() => setHasUserInteracted(true)}
+              />
             </div>
-            <p className="text-white/80 text-sm font-medium tracking-wide mt-4">
-              {selectedClip.title}
-            </p>
+            <p className="text-white/80 text-sm font-medium tracking-wide mt-4">{selectedClip.title}</p>
           </div>
 
           {/* Preview Cards Grid (2x2) */}
@@ -132,24 +174,23 @@ export default function Live() {
                     src={clip.posterUrl}
                     alt={clip.title}
                     loading="lazy"
-                    className="w-full h-full object-cover object-top pointer-events-none"
+                    className="w-full h-full object-cover object-top pointer-events-none select-none"
+                    draggable={false}
                   />
 
                   {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-10" />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-10 pointer-events-none" />
 
                   {/* Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                     <div className="w-12 h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
                       <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
                     </div>
                   </div>
 
                   {/* Title */}
-                  <div className="absolute bottom-3 left-3 right-3 z-30">
-                    <p className="text-white/80 text-xs font-medium tracking-wide truncate">
-                      {clip.title}
-                    </p>
+                  <div className="absolute bottom-3 left-3 right-3 z-30 pointer-events-none">
+                    <p className="text-white/80 text-xs font-medium tracking-wide truncate">{clip.title}</p>
                   </div>
                 </div>
               );

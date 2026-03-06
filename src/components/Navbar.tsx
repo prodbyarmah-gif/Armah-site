@@ -1,110 +1,129 @@
-import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react'
 
-export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+type NavLink = { label: string; href: string }
+
+export default function Navbar(): JSX.Element {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+
+  const links: NavLink[] = [
+    { label: 'LIVE', href: '#live' },
+    { label: 'SHOWS', href: '#shows' },
+    { label: 'PRODUCER', href: '#producer' },
+    { label: 'BOOKING', href: '#booking' },
+  ]
+
+  const mid = Math.ceil(links.length / 2)
+  const leftLinks = links.slice(0, mid)
+  const rightLinks = links.slice(mid)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false);
+    // Prevent background scroll when menu open
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
     }
-  };
+  }, [open])
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent | TouchEvent) {
+      const target = e.target as Node
+      if (open && menuRef.current && !menuRef.current.contains(target)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('touchstart', handleOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
+  }, [open])
+
+  function handleLinkClick() {
+    setOpen(false)
+  }
 
   return (
-    <>
-      <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-black/90 backdrop-blur-md border-b border-white/5' : 'bg-black/75 backdrop-blur'
-        }`}
-      >
-        <nav className="mx-auto flex max-w-6xl items-center justify-center gap-4 sm:gap-8 px-4 py-4">
-          {/* Left Links */}
-          <div className="flex items-center gap-4 sm:gap-8">
-            <button 
-              onClick={() => scrollToSection('live')} 
-              className="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head"
-            >
-              Live
-            </button>
-            <button 
-              onClick={() => scrollToSection('shows')} 
-              className="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head"
-            >
-              Shows
-            </button>
+    <header
+      className="sticky top-0 z-50 bg-black border-b border-gray-800"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
+      <nav className="relative max-w-6xl mx-auto px-6 sm:px-6 lg:px-8" aria-label="Main navigation">
+        <div className="flex items-center justify-center h-16 relative">
+          <div className="flex-1 hidden md:flex justify-end gap-8">
+            {leftLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={handleLinkClick}
+                className="text-sm text-white hover:underline py-3 px-2 cursor-pointer font-head tracking-wide"
+              >
+                {l.label}
+              </a>
+            ))}
           </div>
 
-          {/* Logo - Centered */}
-          <button 
-            onClick={() => scrollToSection('top')} 
-            className="px-4 sm:px-8"
-            aria-label="ARMAH home"
-          >
-            <img
-              src="/assets/ARMAH_logo_transparent_white.png"
-              alt="ARMAH logo"
-              title="ARMAH"
-              className="h-12 sm:h-16 w-auto drop-shadow-[0_0_14px_rgba(251,54,64,0.28)]"
-            />
-          </button>
-
-          {/* Right Links */}
-          <div className="flex items-center gap-4 sm:gap-8">
-            <button 
-              onClick={() => scrollToSection('producer')} 
-              className="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head"
-            >
-              Producer
-            </button>
-            <button 
-              onClick={() => scrollToSection('booking')} 
-              className="text-xs sm:text-sm tracking-[0.22em] text-white/80 hover:text-armah-red transition-colors uppercase font-head"
-            >
-              Booking
-            </button>
+          <div className="flex-none mx-6 flex items-center justify-center flex-shrink-0">
+            <a href="/" aria-label="Home" className="flex items-center justify-center flex-shrink-0">
+              <img
+                src="/assets/ARMAH_logo_transparent_white.png"
+                alt="ARMAH"
+                className="h-[108px] sm:h-[122px] md:h-[135px] w-auto mx-auto object-contain flex-shrink-0"
+              />
+            </a>
           </div>
-        </nav>
-      </header>
 
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="fixed top-4 right-4 z-[60] md:hidden text-white p-2"
-        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-      >
-        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+          <div className="flex-1 hidden md:flex justify-start gap-8">
+            {rightLinks.map((l) => (
+              <a
+                key={l.href + '-right'}
+                href={l.href}
+                onClick={handleLinkClick}
+                className="text-sm text-white hover:underline py-3 px-2 cursor-pointer font-head tracking-wide"
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[55] bg-black/98 flex flex-col items-center justify-center gap-8 md:hidden">
-          <img
-            src="/assets/ARMAH_logo_transparent_white.png"
-            alt="ARMAH logo"
-            className="h-16 w-auto mb-8"
-          />
-          {['Live', 'Shows', 'Producer', 'Booking'].map((item) => (
+          <div className="md:hidden absolute right-4 top-1/2 -translate-y-1/2">
             <button
-              key={item}
-              onClick={() => scrollToSection(item.toLowerCase())}
-              className="text-white text-2xl tracking-[0.2em] uppercase hover:text-armah-red transition-colors font-head"
+              onClick={() => setOpen((s) => !s)}
+              aria-label="Toggle menu"
+              aria-expanded={open}
+              className="text-white focus:outline-none bg-transparent p-2 rounded"
             >
-              {item}
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {open ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
             </button>
-          ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile panel */}
+      {open && (
+        <div ref={menuRef} className="md:hidden bg-black border-t border-gray-800">
+          <div className="px-4 pt-2 pb-4 space-y-2">
+            {links.map((l) => (
+              <a
+                key={l.href + '-mobile'}
+                href={l.href}
+                onClick={handleLinkClick}
+                className="block text-white text-base font-head tracking-wide"
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
         </div>
       )}
-    </>
-  );
+    </header>
+  )
 }

@@ -42,17 +42,18 @@ export default function Shows() {
         <div className={`max-w-4xl mx-auto transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {selectedShows.map((show) => (
-              <button
+              <a
                 key={show.label}
-                type="button"
-                onClick={() => window.open(show.url, "_blank", "noopener,noreferrer")}
+                href={show.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 title={`Open ${show.label} on Instagram`}
-                className="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300 cursor-pointer pointer-events-auto relative z-10"
+                className="px-4 py-3 border border-white/10 bg-white/[0.02] hover:border-armah-red/50 hover:bg-armah-red/5 transition-all duration-300 cursor-pointer pointer-events-auto relative z-10 block"
               >
                 <p className="text-white/80 text-sm font-medium tracking-wide text-center hover:text-white transition-colors">
                   {show.label}
                 </p>
-              </button>
+              </a>
             ))}
           </div>
         </div>

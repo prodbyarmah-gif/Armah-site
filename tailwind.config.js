@@ -11,7 +11,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        head: ['Anton', 'Oswald', 'Impact', 'system-ui', 'sans-serif'],
+        head: ['"Heading Trial 38"', 'Anton', 'Oswald', 'Impact', 'system-ui', 'sans-serif'],
       },
     },
   },
