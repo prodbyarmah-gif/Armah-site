@@ -4,6 +4,8 @@ type NavLink = { label: string; href: string }
 
 export default function Navbar(): JSX.Element {
   const [open, setOpen] = useState(false)
+  const [isAtTop, setIsAtTop] = useState(true)
+  const lastScrollY = useRef(0)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   const links: NavLink[] = [
@@ -41,13 +43,31 @@ export default function Navbar(): JSX.Element {
     }
   }, [open])
 
+  useEffect(() => {
+    // Keep navbar always visible; only background changes when near top.
+    function onScroll() {
+      const y = window.scrollY || 0
+      setIsAtTop(y <= 10)
+      lastScrollY.current = y
+    }
+
+    const initialY = window.scrollY || 0
+    lastScrollY.current = initialY
+    setIsAtTop(initialY <= 10)
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [open])
+
   function handleLinkClick() {
     setOpen(false)
   }
 
   return (
     <header
-      className="sticky top-0 z-50 bg-black border-b border-gray-800"
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-out pointer-events-auto backdrop-blur-none border-transparent ${
+        isAtTop ? 'bg-gradient-to-b from-black/35 via-black/15 to-transparent' : 'bg-transparent'
+      }`}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <nav className="relative max-w-6xl mx-auto px-6 sm:px-6 lg:px-8" aria-label="Main navigation">
@@ -109,7 +129,7 @@ export default function Navbar(): JSX.Element {
 
       {/* Mobile panel */}
       {open && (
-        <div ref={menuRef} className="md:hidden bg-black border-t border-gray-800">
+        <div ref={menuRef} className="md:hidden bg-black/80 border-t border-white/10 backdrop-blur-sm">
           <div className="px-4 pt-2 pb-4 space-y-2">
             {links.map((l) => (
               <a
