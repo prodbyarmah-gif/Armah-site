@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
-import { siteConfig } from '../data/armah';
 
 export default function Booking() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -111,14 +110,14 @@ export default function Booking() {
           {/* Email Display */}
           <div className={`text-center mb-12 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <a
-              href={`mailto:${siteConfig.email}`}
+              href="mailto:booking@prodbyarmah.com"
               className="inline-flex items-center gap-4 text-white hover:text-armah-red transition-colors duration-200 group"
             >
               <div className="w-12 h-12 rounded-full bg-armah-red/10 flex items-center justify-center group-hover:bg-armah-red/20 transition-colors duration-200">
                 <Mail className="w-5 h-5 text-armah-red" />
               </div>
               <span className="text-xl md:text-2xl font-medium tracking-wide">
-                {siteConfig.email}
+                booking@prodbyarmah.com
               </span>
             </a>
             <p className="text-white/50 text-sm mt-4">
