@@ -6,12 +6,15 @@ export default function Booking() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     eventType: '',
     location: '',
     message: '',
+    company: '', // honeypot (bots fill this)
   });
 
   useEffect(() => {
@@ -37,20 +40,56 @@ export default function Booking() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const subject = encodeURIComponent(`Booking Inquiry from ${formData.name}`);
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\n` +
-      `Email: ${formData.email}\n` +
-      `Event Type: ${formData.eventType || 'Not specified'}\n` +
-      `Location: ${formData.location || 'Not specified'}\n\n` +
-      `Message:\n${formData.message}`
-    );
-    
-    window.location.href = `mailto:${siteConfig.email}?subject=${subject}&body=${body}`;
-    setIsSubmitted(true);
+    setError('');
+
+    // simple client-side validation (matches backend requirements)
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.eventType.trim() ||
+      !formData.location.trim() ||
+      !formData.message.trim()
+    ) {
+      setError('Please fill in Name, Email, Event Type, Location, and Message.');
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          eventType: formData.eventType,
+          location: formData.location,
+          message: formData.message,
+          company: formData.company, // honeypot
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Send failed');
+      }
+
+      setIsSubmitted(true);
+      setFormData({
+        name: '',
+        email: '',
+        eventType: '',
+        location: '',
+        message: '',
+        company: '',
+      });
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -121,6 +160,21 @@ export default function Booking() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Honeypot (anti-spam) */}
+                <input
+                  type="text"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleInputChange}
+                  className="hidden"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+                {error ? (
+                  <div className="border border-armah-red/40 bg-armah-red/10 text-white/80 text-sm px-4 py-3 rounded-lg">
+                    {error}
+                  </div>
+                ) : null}
                 {/* Name & Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -160,6 +214,7 @@ export default function Booking() {
                       name="eventType"
                       value={formData.eventType}
                       onChange={handleInputChange}
+                      required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-armah-red focus:outline-none transition-colors duration-200 appearance-none cursor-pointer"
                     >
                       <option value="" className="bg-black">Select type</option>
@@ -178,6 +233,7 @@ export default function Booking() {
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
+                      required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200"
                       placeholder="City, Country"
                     />
@@ -202,9 +258,10 @@ export default function Booking() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-armah-red hover:bg-[#ff4d56] text-white font-head px-8 py-4 text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)] flex items-center justify-center gap-3"
+                  disabled={isSending}
+                  className={`w-full bg-armah-red hover:bg-[#ff4d56] text-white font-head px-8 py-4 text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)] flex items-center justify-center gap-3 ${isSending ? 'opacity-70 cursor-not-allowed hover:shadow-none' : ''}`}
                 >
-                  <span>Send Inquiry</span>
+                  <span>{isSending ? 'Sending…' : 'Send Inquiry'}</span>
                   <Send className="w-4 h-4" />
                 </button>
               </form>
