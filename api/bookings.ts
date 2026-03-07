@@ -169,6 +169,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     });
 
+    // 3) Auto-reply to the customer (short confirmation)
+    try {
+      const autoSubject = 'Booking inquiry received ✅';
+      const autoHtml = `
+        <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;">
+          <p style="margin:0 0 10px;">Hey ${name},</p>
+          <p style="margin:0 0 10px;">Thanks for reaching out — I received your booking inquiry and will get back to you as soon as possible.</p>
+          <p style="margin:0 0 14px; color:#666; font-size:13px;">(This is an automatic confirmation.)</p>
+          <hr style="border:none;border-top:1px solid #e5e5e5;margin:14px 0;" />
+          <p style="margin:0 0 6px; color:#666; font-size:13px;">Your message:</p>
+          <div style="white-space:pre-wrap; background:#111; color:#fff; padding:10px 12px; border-radius:8px;">${message.replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+          }[c] as string))}</div>
+          <p style="margin:14px 0 0;">— ${fromName}</p>
+        </div>
+      `;
+
+      await brevoRequest('/smtp/email', apiKey, {
+        method: 'POST',
+        body: JSON.stringify({
+          sender: { email: fromEmail, name: fromName },
+          to: [{ email }],
+          // Reply-to should go to your booking inbox (so customers don't reply to no-reply by accident)
+          replyTo: { email: bookingTo, name: fromName },
+          subject: autoSubject,
+          htmlContent: autoHtml,
+        }),
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('Brevo auto-reply failed:', e);
+    }
+
     return res.status(200).json({ ok: true });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
