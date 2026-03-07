@@ -127,20 +127,24 @@ export default function Booking() {
 
           {/* Rider Buttons */}
           <div className={`flex flex-wrap justify-center gap-4 mb-12 transition-all duration-700 delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <button
+            <a
+              href="/assets/TECHNICAL%20RIDER%20.pdf"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
-              onClick={() => alert('Technical Rider coming soon')}
             >
               <FileText className="w-4 h-4" />
               <span className="text-sm tracking-wide">Technical Rider</span>
-            </button>
-            <button
+            </a>
+            <a
+              href="/assets/HOSPITALITY%20RIDER.pdf"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
-              onClick={() => alert('Hospitality Rider coming soon')}
             >
               <FileText className="w-4 h-4" />
               <span className="text-sm tracking-wide">Hospitality Rider</span>
-            </button>
+            </a>
           </div>
 
           {/* Contact Form */}
