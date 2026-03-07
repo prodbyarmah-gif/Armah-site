@@ -101,6 +101,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const fromEmail = requireEnv('BREVO_FROM_EMAIL');
     const fromName = process.env.BREVO_FROM_NAME || 'ARMAH Website';
     const bookingTo = requireEnv('BOOKING_TO');
+    const managerEmail = process.env.MANAGER_EMAIL || '';
+    const managerTo = isEmail(managerEmail) ? [{ email: managerEmail }] : [];
 
     const listId = Number(listIdRaw);
     if (!Number.isFinite(listId) || listId <= 0) {
@@ -159,7 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: 'POST',
       body: JSON.stringify({
         sender: { email: fromEmail, name: fromName },
-        to: [{ email: bookingTo }],
+        to: [{ email: bookingTo }, ...managerTo],
 
         // ✅ Reply-To makes Gmail "Reply" go to the customer automatically
         replyTo: { email, name: name || 'Booking Inquiry' },
@@ -171,22 +173,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 3) Auto-reply to the customer (short confirmation)
     try {
-      const autoSubject = 'Booking inquiry received ✅';
-      const autoHtml = `
-        <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;">
-          <p style="margin:0 0 10px;">Hey ${name},</p>
-          <p style="margin:0 0 10px;">Thanks for reaching out — I received your booking inquiry and will get back to you as soon as possible.</p>
-          <p style="margin:0 0 14px; color:#666; font-size:13px;">(This is an automatic confirmation.)</p>
-          <hr style="border:none;border-top:1px solid #e5e5e5;margin:14px 0;" />
-          <p style="margin:0 0 6px; color:#666; font-size:13px;">Your message:</p>
-          <div style="white-space:pre-wrap; background:#111; color:#fff; padding:10px 12px; border-radius:8px;">${message.replace(/[&<>"']/g, (c) => ({
+      const esc = (s: string) =>
+        s.replace(/[&<>"']/g, (c) =>
+          ({
             '&': '&amp;',
             '<': '&lt;',
             '>': '&gt;',
             '"': '&quot;',
             "'": '&#39;',
-          }[c] as string))}</div>
-          <p style="margin:14px 0 0;">— ${fromName}</p>
+          }[c] as string)
+        );
+
+      const autoSubject = 'Booking inquiry received ✅';
+      const autoHtml = `
+        <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;">
+          <p style="margin:0 0 10px;">Hey ${esc(name)},</p>
+          <p style="margin:0 0 10px;">Thanks for reaching out — I received your booking inquiry.</p>
+          <p style="margin:0 0 10px;">My name is <strong>Armah</strong>, and my manager is already informed. We’ll get back to you as soon as possible.</p>
+          <p style="margin:0 0 14px; color:#666; font-size:13px;">(This is an automatic confirmation.)</p>
+          <hr style="border:none;border-top:1px solid #e5e5e5;margin:14px 0;" />
+          <p style="margin:0 0 6px; color:#666; font-size:13px;">Your message:</p>
+          <div style="white-space:pre-wrap; background:#111; color:#fff; padding:10px 12px; border-radius:8px;">${esc(message)}</div>
+          <p style="margin:14px 0 0;">— ${esc(fromName)}</p>
         </div>
       `;
 
