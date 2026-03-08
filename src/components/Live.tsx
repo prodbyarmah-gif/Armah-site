@@ -100,11 +100,7 @@ export default function Live() {
 
     try {
       v.load();
-
-      // Only autoplay when the user has interacted (e.g. clicked a preview).
-      if (hasUserInteracted) {
-        v.play().catch(() => {});
-      }
+      // No autoplay. User must press play manually.
     } catch {
       // ignore
     }
@@ -131,40 +127,43 @@ export default function Live() {
         </div>
 
         {/* Player + Playlist Layout */}
-        <div
-          className={`grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 transition-all duration-700 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
+        {/*
+            Layout:
+            - Mobile/tablet: player on top, previews below in 2 columns.
+            - Desktop (lg+): player centered, previews in a single row (4 columns) underneath.
+          */}
+        <div className="flex flex-col items-center gap-6">
           {/* Main Player */}
-          <div className="relative">
-            <div className="relative aspect-video bg-black overflow-hidden rounded-lg">
-              <video
-                key={selectedClipId}
-                ref={videoRef}
-                controls
-                playsInline
-                preload="metadata"
-                poster={selectedClip.posterUrl}
-                disablePictureInPicture
-                disableRemotePlayback
-                controlsList="nodownload noplaybackrate"
-                className="w-full h-full object-contain"
-                src={selectedClip.videoUrl}
-                onPlay={() => setHasUserInteracted(true)}
-              />
+          <div className="w-full">
+            <div className="relative w-full max-w-[420px] mx-auto">
+              <div className="relative aspect-[9/16] bg-black overflow-hidden rounded-lg">
+                <video
+                  key={selectedClipId}
+                  ref={videoRef}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster={selectedClip.posterUrl}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                  controlsList="nodownload noplaybackrate"
+                  className="w-full h-full object-contain"
+                  src={selectedClip.videoUrl}
+                  onPlay={() => setHasUserInteracted(true)}
+                />
+              </div>
+              <p className="text-white/80 text-sm font-medium tracking-wide mt-4">{selectedClip.title}</p>
             </div>
-            <p className="text-white/80 text-sm font-medium tracking-wide mt-4">{selectedClip.title}</p>
           </div>
 
           {/* Preview Cards Grid (2x2) */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="w-full max-w-6xl mx-auto grid grid-cols-2 gap-4 lg:grid-cols-4">
             {clips.map((clip) => {
               const isSelected = clip.id === selectedClipId;
               return (
                 <div
                   key={clip.id}
-                  className={`relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 ${
+                  className={`relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 lg:aspect-[9/16] ${
                     isSelected ? 'ring-2 ring-armah-red' : 'hover:ring-1 hover:ring-armah-red/50'
                   }`}
                   onClick={() => handlePreviewClick(clip.id)}
