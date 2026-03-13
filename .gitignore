@@ -4,3 +4,4 @@ dist
 .env
 .env.*
 .vscode
+public/assets/beat-previews/mp3/

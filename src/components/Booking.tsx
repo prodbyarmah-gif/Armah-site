@@ -1,12 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
 
+const DJ_EVENT_TYPES = [
+  { value: 'club', label: 'Club Show' },
+  { value: 'festival', label: 'Festival' },
+  { value: 'private', label: 'Private Event' },
+  { value: 'corporate', label: 'Corporate' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+const PRODUCER_TYPES = [
+  { value: 'beat_license', label: 'Beat license' },
+  { value: 'custom_beat', label: 'Custom beat' },
+  { value: 'production', label: 'Production / Arrangement' },
+  { value: 'mix_master', label: 'Mixing / Mastering' },
+  { value: 'collab', label: 'Collab' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+type InquiryType = 'dj' | 'producer';
+
 export default function Booking() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
+  const [inquiryType, setInquiryType] = useState<InquiryType>('dj');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,6 +53,10 @@ export default function Booking() {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, eventType: '' }));
+  }, [inquiryType]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -63,6 +87,7 @@ export default function Booking() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
+          inquiryType,
           eventType: formData.eventType,
           location: formData.location,
           message: formData.message,
@@ -178,6 +203,35 @@ export default function Booking() {
                     {error}
                   </div>
                 ) : null}
+                {/* Inquiry Type (DJ / Producer) */}
+                <div>
+                  <label className="block text-white/70 text-sm mb-2 text-center">Inquiry Type</label>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setInquiryType('dj')}
+                      className={`px-4 py-2 rounded-full border text-sm font-semibold tracking-wide transition
+                        ${inquiryType === 'dj'
+                          ? 'border-white/30 bg-white/[0.08] text-white'
+                          : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20 hover:bg-white/[0.04]'
+                        }`}
+                    >
+                      DJ Booking
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInquiryType('producer')}
+                      className={`px-4 py-2 rounded-full border text-sm font-semibold tracking-wide transition
+                        ${inquiryType === 'producer'
+                          ? 'border-white/30 bg-white/[0.08] text-white'
+                          : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20 hover:bg-white/[0.04]'
+                        }`}
+                    >
+                      Producer / Beats
+                    </button>
+                  </div>
+                </div>
                 {/* Name & Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -211,7 +265,7 @@ export default function Booking() {
                 {/* Event Type & Location */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="eventType" className="block text-white/70 text-sm mb-2">Event Type</label>
+                    <label htmlFor="eventType" className="block text-white/70 text-sm mb-2">{inquiryType === 'dj' ? 'Event Type' : 'Producer Request'}</label>
                     <select
                       id="eventType"
                       name="eventType"
@@ -221,11 +275,11 @@ export default function Booking() {
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-armah-red focus:outline-none transition-colors duration-200 appearance-none cursor-pointer"
                     >
                       <option value="" className="bg-black">Select type</option>
-                      <option value="club" className="bg-black">Club Show</option>
-                      <option value="festival" className="bg-black">Festival</option>
-                      <option value="private" className="bg-black">Private Event</option>
-                      <option value="corporate" className="bg-black">Corporate</option>
-                      <option value="other" className="bg-black">Other</option>
+                      {(inquiryType === 'dj' ? DJ_EVENT_TYPES : PRODUCER_TYPES).map((t) => (
+                        <option key={t.value} value={t.value} className="bg-black">
+                          {t.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -254,7 +308,7 @@ export default function Booking() {
                     required
                     rows={5}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200 resize-none"
-                    placeholder="Tell us about your event..."
+                    placeholder={inquiryType === 'dj' ? 'Tell us about your event...' : 'Tell us what you need (license, custom beat, collab, etc.)...'}
                   />
                 </div>
 
