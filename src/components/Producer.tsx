@@ -537,12 +537,20 @@ export default function Producer() {
                       </div>
 
                       <div className="mt-3">
-                        <a
-                          href={`#booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const hash = `booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`;
+                            window.location.hash = hash;
+
+                            // Try to scroll to the booking section if it exists
+                            const bookingEl = document.getElementById('booking');
+                            if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
                           License inquiry
-                        </a>
+                        </button>
                       </div>
 
                       <p className="text-white/30 text-xs mt-2">ID: {b.id} • Non-exclusive / exclusive available</p>
@@ -598,12 +606,20 @@ export default function Producer() {
                       </div>
 
                       <div className="mt-3">
-                        <a
-                          href={`#booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const hash = `booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`;
+                            window.location.hash = hash;
+
+                            // Try to scroll to the booking section if it exists
+                            const bookingEl = document.getElementById('booking');
+                            if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
                           License inquiry
-                        </a>
+                        </button>
                       </div>
 
                       <p className="text-white/30 text-xs mt-2">ID: {b.id} • Non-exclusive / exclusive available</p>
@@ -659,12 +675,20 @@ export default function Producer() {
                       </div>
 
                       <div className="mt-3">
-                        <a
-                          href={`#booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const hash = `booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`;
+                            window.location.hash = hash;
+
+                            // Try to scroll to the booking section if it exists
+                            const bookingEl = document.getElementById('booking');
+                            if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
                           License inquiry
-                        </a>
+                        </button>
                       </div>
 
                       <p className="text-white/30 text-xs mt-2">ID: {b.id} • Non-exclusive / exclusive available</p>
