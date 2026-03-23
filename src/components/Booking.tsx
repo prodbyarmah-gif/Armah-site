@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
-import beats from '../data/beats';
+import { beatOptions } from './Producer';
 
 const DJ_EVENT_TYPES = [
   { value: 'club', label: 'Club Show' },
@@ -29,8 +29,9 @@ export default function Booking() {
   const [error, setError] = useState('');
   const [inquiryType, setInquiryType] = useState<InquiryType>('dj');
   const [selectedBeatId, setSelectedBeatId] = useState<string>('');
+  const isAutoPrefillingRef = useRef(false);
 
-  const selectedBeat = selectedBeatId ? beats.find((b: any) => b.id === selectedBeatId) : undefined;
+  const selectedBeat = selectedBeatId ? beatOptions.find((b) => b.id === selectedBeatId) : undefined;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -60,46 +61,71 @@ export default function Booking() {
   }, []);
 
   useEffect(() => {
-    setFormData(prev => ({ ...prev, eventType: '' }));
+    // When we switch tabs due to URL auto-prefill, do NOT wipe eventType.
+    if (isAutoPrefillingRef.current) return;
+    setFormData((prev) => ({ ...prev, eventType: '' }));
     if (inquiryType !== 'producer') setSelectedBeatId('');
   }, [inquiryType]);
 
   useEffect(() => {
-    // expected: #booking?beatId=<...>
-    const applyHashPrefill = () => {
+    // expected: #booking?beatId=<...> or #/booking?beatId=<...> or /booking?beatId=<...>
+    const getBeatIdFromLocation = (): string => {
+      // 1) normal query: /booking?beatId=...
+      const direct = new URLSearchParams(window.location.search).get('beatId') || '';
+      if (direct) return direct;
+
+      // 2) hash query: #booking?beatId=... OR #/booking?beatId=...
       const rawHash = window.location.hash || '';
-
-      // Support both `#booking?...` and `#/booking?...`
       const normalized = rawHash.startsWith('#/') ? rawHash.slice(2) : rawHash.slice(1);
+      const withoutLeadingSlash = normalized.startsWith('/') ? normalized.slice(1) : normalized;
 
-      // We only act when the hash points to booking
-      if (!normalized.startsWith('booking')) return;
+      if (!withoutLeadingSlash.startsWith('booking')) return '';
 
-      const qIndex = normalized.indexOf('?');
-      if (qIndex === -1) return;
+      const qIndex = withoutLeadingSlash.indexOf('?');
+      if (qIndex === -1) return '';
 
-      const query = normalized.slice(qIndex + 1);
+      const query = withoutLeadingSlash.slice(qIndex + 1);
       const params = new URLSearchParams(query);
+      return params.get('beatId') || '';
+    };
 
-      const beatId = params.get('beatId') || '';
+    const applyPrefill = () => {
+      const beatId = getBeatIdFromLocation();
       if (!beatId) return;
 
-      // Switch to Producer inquiry + Beat license
+      isAutoPrefillingRef.current = true;
       setInquiryType('producer');
       setFormData((prev) => ({ ...prev, eventType: 'beat_license' }));
       setSelectedBeatId(beatId);
 
+      // allow the inquiryType effect to run normally again after this tick
+      setTimeout(() => {
+        isAutoPrefillingRef.current = false;
+      }, 0);
 
-      // Scroll to booking section
       requestAnimationFrame(() => {
         const el = document.getElementById('booking');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
+
+      // Clean beatId from URL so refresh doesn't re-trigger
+      if (window.location.hash.includes('?')) {
+        window.location.hash = window.location.hash.split('?')[0];
+      }
+      if (window.location.search.includes('beatId=')) {
+        const u = new URL(window.location.href);
+        u.searchParams.delete('beatId');
+        window.history.replaceState({}, '', u.toString());
+      }
     };
 
-    applyHashPrefill();
-    window.addEventListener('hashchange', applyHashPrefill);
-    return () => window.removeEventListener('hashchange', applyHashPrefill);
+    applyPrefill();
+    window.addEventListener('hashchange', applyPrefill);
+    window.addEventListener('popstate', applyPrefill);
+    return () => {
+      window.removeEventListener('hashchange', applyPrefill);
+      window.removeEventListener('popstate', applyPrefill);
+    };
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -365,21 +391,21 @@ export default function Booking() {
                     >
                       <option value="" className="bg-black">Choose a beat</option>
                       <optgroup label="Afro" className="bg-black">
-                        {beats.filter((b: any) => b.mood === 'Afro').map((b: any) => (
+                        {beatOptions.filter((b: any) => b.mood === 'Afro').map((b: any) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
                         ))}
                       </optgroup>
                       <optgroup label="Drill" className="bg-black">
-                        {beats.filter((b: any) => b.mood === 'Drill').map((b: any) => (
+                        {beatOptions.filter((b: any) => b.mood === 'Drill').map((b: any) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
                         ))}
                       </optgroup>
                       <optgroup label="Trap" className="bg-black">
-                        {beats.filter((b: any) => b.mood === 'Trap').map((b: any) => (
+                        {beatOptions.filter((b: any) => b.mood === 'Trap').map((b: any) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
