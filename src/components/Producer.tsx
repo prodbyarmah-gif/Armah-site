@@ -49,9 +49,9 @@ function toSpotifyEmbed(url: string): string {
   }
 }
 
-type BeatMood = 'Afro' | 'Drill' | 'Trap';
+export type BeatMood = 'Afro' | 'Drill' | 'Trap';
 
-type Beat = {
+export type Beat = {
   id: string;
   title: string;
   bpm: number;
@@ -61,7 +61,7 @@ type Beat = {
   previewUrl: string;
 };
 
-const beatCatalog: Beat[] = [
+export const beatCatalog: Beat[] = [
   // AFRO
   {
     id: 'B001',
@@ -149,6 +149,24 @@ const beatCatalog: Beat[] = [
     previewUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/mp3/Timba%20-%20114BPM%20%40Armah.mp3',
   },
 ];
+
+export type BeatOption = {
+  id: Beat['id'];
+  title: Beat['title'];
+  bpm: Beat['bpm'];
+  mood: Beat['mood'];
+};
+
+export const beatOptions: BeatOption[] = beatCatalog.map((b: Beat) => ({
+  id: b.id,
+  title: b.title,
+  bpm: b.bpm,
+  mood: b.mood,
+}));
+
+export const beatOptionsById: Record<string, BeatOption> = Object.fromEntries(
+  beatOptions.map((b) => [b.id, b])
+);
 
 // Global registry to enforce single-preview playback
 const waveRegistry = new Map<string, WaveInstance>();
@@ -540,12 +558,12 @@ export default function Producer() {
                         <button
                           type="button"
                           onClick={() => {
-                            const hash = `booking?beatId=${encodeURIComponent(b.id)}`;
-                            window.location.hash = hash;
+                            window.location.hash = `#booking?beatId=${encodeURIComponent(b.id)}`;
 
-                            // Try to scroll to the booking section if it exists
-                            const bookingEl = document.getElementById('booking');
-                            if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            requestAnimationFrame(() => {
+                              const bookingEl = document.getElementById('booking');
+                              if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            });
                           }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
@@ -609,12 +627,12 @@ export default function Producer() {
                         <button
                           type="button"
                           onClick={() => {
-                            const hash = `booking?beatId=${encodeURIComponent(b.id)}`;
-                            window.location.hash = hash;
+                            window.location.hash = `#booking?beatId=${encodeURIComponent(b.id)}`;
 
-                            // Try to scroll to the booking section if it exists
-                            const bookingEl = document.getElementById('booking');
-                            if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            requestAnimationFrame(() => {
+                              const bookingEl = document.getElementById('booking');
+                              if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            });
                           }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
@@ -678,12 +696,12 @@ export default function Producer() {
                         <button
                           type="button"
                           onClick={() => {
-                            const hash = `booking?beatId=${encodeURIComponent(b.id)}`;
-                            window.location.hash = hash;
+                            window.location.hash = `#booking?beatId=${encodeURIComponent(b.id)}`;
 
-                            // Try to scroll to the booking section if it exists
-                            const bookingEl = document.getElementById('booking');
-                            if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            requestAnimationFrame(() => {
+                              const bookingEl = document.getElementById('booking');
+                              if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            });
                           }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
