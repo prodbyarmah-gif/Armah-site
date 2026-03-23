@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
-import { beatOptions } from './Producer';
+import { beatOptions, type BeatOption } from './Producer';
 
 const DJ_EVENT_TYPES = [
   { value: 'club', label: 'Club Show' },
@@ -31,7 +31,7 @@ export default function Booking() {
   const [selectedBeatId, setSelectedBeatId] = useState<string>('');
   const isAutoPrefillingRef = useRef(false);
 
-  const selectedBeat = selectedBeatId ? beatOptions.find((b) => b.id === selectedBeatId) : undefined;
+  const selectedBeat = selectedBeatId ? beatOptions.find((b: BeatOption) => b.id === selectedBeatId) : undefined;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -391,21 +391,21 @@ export default function Booking() {
                     >
                       <option value="" className="bg-black">Choose a beat</option>
                       <optgroup label="Afro" className="bg-black">
-                        {beatOptions.filter((b: any) => b.mood === 'Afro').map((b: any) => (
+                        {beatOptions.filter((b: BeatOption) => b.mood === 'Afro').map((b: BeatOption) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
                         ))}
                       </optgroup>
                       <optgroup label="Drill" className="bg-black">
-                        {beatOptions.filter((b: any) => b.mood === 'Drill').map((b: any) => (
+                        {beatOptions.filter((b: BeatOption) => b.mood === 'Drill').map((b: BeatOption) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
                         ))}
                       </optgroup>
                       <optgroup label="Trap" className="bg-black">
-                        {beatOptions.filter((b: any) => b.mood === 'Trap').map((b: any) => (
+                        {beatOptions.filter((b: BeatOption) => b.mood === 'Trap').map((b: BeatOption) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
