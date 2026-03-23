@@ -540,7 +540,7 @@ export default function Producer() {
                         <button
                           type="button"
                           onClick={() => {
-                            const hash = `booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`;
+                            const hash = `booking?beatId=${encodeURIComponent(b.id)}`;
                             window.location.hash = hash;
 
                             // Try to scroll to the booking section if it exists
@@ -609,7 +609,7 @@ export default function Producer() {
                         <button
                           type="button"
                           onClick={() => {
-                            const hash = `booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`;
+                            const hash = `booking?beatId=${encodeURIComponent(b.id)}`;
                             window.location.hash = hash;
 
                             // Try to scroll to the booking section if it exists
@@ -678,7 +678,7 @@ export default function Producer() {
                         <button
                           type="button"
                           onClick={() => {
-                            const hash = `booking?beat=${encodeURIComponent(b.title)}&id=${encodeURIComponent(b.id)}`;
+                            const hash = `booking?beatId=${encodeURIComponent(b.id)}`;
                             window.location.hash = hash;
 
                             // Try to scroll to the booking section if it exists
