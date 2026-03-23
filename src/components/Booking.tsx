@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
+import beats from '../data/beats';
 
 const DJ_EVENT_TYPES = [
   { value: 'club', label: 'Club Show' },
@@ -27,6 +28,10 @@ export default function Booking() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [inquiryType, setInquiryType] = useState<InquiryType>('dj');
+  const [selectedBeatId, setSelectedBeatId] = useState<string>('');
+
+  const selectedBeat = selectedBeatId ? beats.find((b: any) => b.id === selectedBeatId) : undefined;
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -56,7 +61,46 @@ export default function Booking() {
 
   useEffect(() => {
     setFormData(prev => ({ ...prev, eventType: '' }));
+    if (inquiryType !== 'producer') setSelectedBeatId('');
   }, [inquiryType]);
+
+  useEffect(() => {
+    // expected: #booking?beatId=<...>
+    const applyHashPrefill = () => {
+      const rawHash = window.location.hash || '';
+
+      // Support both `#booking?...` and `#/booking?...`
+      const normalized = rawHash.startsWith('#/') ? rawHash.slice(2) : rawHash.slice(1);
+
+      // We only act when the hash points to booking
+      if (!normalized.startsWith('booking')) return;
+
+      const qIndex = normalized.indexOf('?');
+      if (qIndex === -1) return;
+
+      const query = normalized.slice(qIndex + 1);
+      const params = new URLSearchParams(query);
+
+      const beatId = params.get('beatId') || '';
+      if (!beatId) return;
+
+      // Switch to Producer inquiry + Beat license
+      setInquiryType('producer');
+      setFormData((prev) => ({ ...prev, eventType: 'beat_license' }));
+      setSelectedBeatId(beatId);
+
+
+      // Scroll to booking section
+      requestAnimationFrame(() => {
+        const el = document.getElementById('booking');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+
+    applyHashPrefill();
+    window.addEventListener('hashchange', applyHashPrefill);
+    return () => window.removeEventListener('hashchange', applyHashPrefill);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -68,6 +112,11 @@ export default function Booking() {
     setError('');
 
     // simple client-side validation (matches backend requirements)
+    if (inquiryType === 'producer' && formData.eventType === 'beat_license' && !selectedBeatId) {
+      setError('Please select a beat for Beat license inquiries.');
+      return;
+    }
+
     if (
       !formData.name.trim() ||
       !formData.email.trim() ||
@@ -89,6 +138,8 @@ export default function Booking() {
           email: formData.email,
           inquiryType,
           eventType: formData.eventType,
+          beatId: inquiryType === 'producer' && formData.eventType === 'beat_license' ? selectedBeatId : undefined,
+          beatTitle: inquiryType === 'producer' && formData.eventType === 'beat_license' ? (selectedBeat?.title || '') : undefined,
           location: formData.location,
           message: formData.message,
           company: formData.company, // honeypot
@@ -109,6 +160,7 @@ export default function Booking() {
         message: '',
         company: '',
       });
+      setSelectedBeatId('');
     } catch (err: any) {
       setError(err?.message || 'Something went wrong.');
     } finally {
@@ -296,6 +348,58 @@ export default function Booking() {
                     />
                   </div>
                 </div>
+
+                {inquiryType === 'producer' && formData.eventType === 'beat_license' ? (
+                  <div>
+                    <label htmlFor="beatId" className="block text-white/70 text-sm mb-2">
+                      Select Beat
+                    </label>
+
+                    <select
+                      id="beatId"
+                      name="beatId"
+                      value={selectedBeatId}
+                      onChange={(e) => setSelectedBeatId(e.target.value)}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-armah-red focus:outline-none transition-colors duration-200 appearance-none cursor-pointer"
+                    >
+                      <option value="" className="bg-black">Choose a beat</option>
+                      <optgroup label="Afro" className="bg-black">
+                        {beats.filter((b: any) => b.mood === 'Afro').map((b: any) => (
+                          <option key={b.id} value={b.id} className="bg-black">
+                            {b.title} • {b.bpm} BPM
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Drill" className="bg-black">
+                        {beats.filter((b: any) => b.mood === 'Drill').map((b: any) => (
+                          <option key={b.id} value={b.id} className="bg-black">
+                            {b.title} • {b.bpm} BPM
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Trap" className="bg-black">
+                        {beats.filter((b: any) => b.mood === 'Trap').map((b: any) => (
+                          <option key={b.id} value={b.id} className="bg-black">
+                            {b.title} • {b.bpm} BPM
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+
+                    {selectedBeat ? (
+                      <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                        <div className="text-white/60 text-xs tracking-wide uppercase">Selected beat</div>
+                        <div className="mt-1 text-white font-semibold">
+                          {selectedBeat.title}
+                        </div>
+                        <div className="mt-1 text-white/60 text-sm">
+                          <span className="text-white/70">ID:</span> {selectedBeat.id} &nbsp;•&nbsp; <span className="text-white/70">BPM:</span> {selectedBeat.bpm} &nbsp;•&nbsp; <span className="text-white/70">Genre:</span> {selectedBeat.mood}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 {/* Message */}
                 <div>
