@@ -1,27 +1,15 @@
+import { useI18n } from "../i18n";
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
 import { beatOptions, type BeatOption } from './Producer';
 
-const DJ_EVENT_TYPES = [
-  { value: 'club', label: 'Club Show' },
-  { value: 'festival', label: 'Festival' },
-  { value: 'private', label: 'Private Event' },
-  { value: 'corporate', label: 'Corporate' },
-  { value: 'other', label: 'Other' },
-] as const;
-
-const PRODUCER_TYPES = [
-  { value: 'beat_license', label: 'Beat license' },
-  { value: 'custom_beat', label: 'Custom beat' },
-  { value: 'production', label: 'Production / Arrangement' },
-  { value: 'mix_master', label: 'Mixing / Mastering' },
-  { value: 'collab', label: 'Collab' },
-  { value: 'other', label: 'Other' },
-] as const;
+const DJ_EVENT_TYPES = ['club', 'festival', 'private', 'corporate', 'other'] as const;
+const PRODUCER_TYPES = ['beat_license', 'custom_beat', 'production', 'mix_master', 'collab', 'other'] as const;
 
 type InquiryType = 'dj' | 'producer';
 
 export default function Booking() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -30,6 +18,8 @@ export default function Booking() {
   const [inquiryType, setInquiryType] = useState<InquiryType>('dj');
   const [selectedBeatId, setSelectedBeatId] = useState<string>('');
   const isAutoPrefillingRef = useRef(false);
+
+  const isDj = inquiryType === 'dj';
 
   const selectedBeat = selectedBeatId ? beatOptions.find((b: BeatOption) => b.id === selectedBeatId) : undefined;
 
@@ -139,7 +129,7 @@ export default function Booking() {
 
     // simple client-side validation (matches backend requirements)
     if (inquiryType === 'producer' && formData.eventType === 'beat_license' && !selectedBeatId) {
-      setError('Please select a beat for Beat license inquiries.');
+      setError(t('booking.errors.selectBeat'));
       return;
     }
 
@@ -150,7 +140,7 @@ export default function Booking() {
       !formData.location.trim() ||
       !formData.message.trim()
     ) {
-      setError('Please fill in Name, Email, Event Type, Location, and Message.');
+      setError(t('booking.errors.missingFields'));
       return;
     }
 
@@ -188,7 +178,7 @@ export default function Booking() {
       });
       setSelectedBeatId('');
     } catch (err: any) {
-      setError(err?.message || 'Something went wrong.');
+      setError(err?.message || t('booking.errors.generic'));
     } finally {
       setIsSending(false);
     }
@@ -204,7 +194,7 @@ export default function Booking() {
         {/* Section Title */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">
-            Booking Inquiry
+            {t("booking.title")}
           </h2>
           <div className="w-20 h-0.5 bg-armah-red mt-6 mx-auto" />
         </div>
@@ -223,9 +213,9 @@ export default function Booking() {
                 booking@prodbyarmah.com
               </span>
             </a>
-            <p className="text-white/50 text-sm mt-4">
-              For bookings, collaborations and appearances.
-            </p>
+          <p className="text-white/50 text-sm mt-4">
+            {t('booking.subtitle')}
+          </p>
           </div>
 
           {/* Rider Buttons */}
@@ -237,7 +227,7 @@ export default function Booking() {
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
             >
               <FileText className="w-4 h-4" />
-              <span className="text-sm tracking-wide">Technical Rider</span>
+              <span className="text-sm tracking-wide">{t('booking.technicalRider')}</span>
             </a>
             <a
               href="/assets/HOSPITALITY%20RIDER.pdf"
@@ -246,7 +236,7 @@ export default function Booking() {
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
             >
               <FileText className="w-4 h-4" />
-              <span className="text-sm tracking-wide">Hospitality Rider</span>
+              <span className="text-sm tracking-wide">{t('booking.hospitalityRider')}</span>
             </a>
           </div>
 
@@ -258,10 +248,10 @@ export default function Booking() {
                   <Check className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-head text-white mb-2 uppercase">
-                  Message Sent
+                  {t('booking.successTitle')}
                 </h3>
                 <p className="text-white/60">
-                  We will get back to you soon.
+                  {t('booking.successBody')}
                 </p>
               </div>
             ) : (
@@ -283,7 +273,7 @@ export default function Booking() {
                 ) : null}
                 {/* Inquiry Type (DJ / Producer) */}
                 <div>
-                  <label className="block text-white/70 text-sm mb-2 text-center">Inquiry Type</label>
+                  <label className="block text-white/70 text-sm mb-2 text-center">{t('booking.inquiryType')}</label>
                   <div className="flex gap-2 justify-center">
                     <button
                       type="button"
@@ -294,7 +284,7 @@ export default function Booking() {
                           : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20 hover:bg-white/[0.04]'
                         }`}
                     >
-                      DJ Booking
+                      {t('booking.typeDj')}
                     </button>
 
                     <button
@@ -306,14 +296,14 @@ export default function Booking() {
                           : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20 hover:bg-white/[0.04]'
                         }`}
                     >
-                      Producer / Beats
+                      {t('booking.typeProducer')}
                     </button>
                   </div>
                 </div>
                 {/* Name & Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-white/70 text-sm mb-2">Name</label>
+                    <label htmlFor="name" className="block text-white/70 text-sm mb-2">{t('booking.fields.name')}</label>
                     <input
                       type="text"
                       id="name"
@@ -322,11 +312,11 @@ export default function Booking() {
                       onChange={handleInputChange}
                       required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200"
-                      placeholder="Your name"
+                      placeholder={t('booking.placeholders.name')}
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-white/70 text-sm mb-2">Email</label>
+                    <label htmlFor="email" className="block text-white/70 text-sm mb-2">{t('booking.fields.email')}</label>
                     <input
                       type="email"
                       id="email"
@@ -335,7 +325,7 @@ export default function Booking() {
                       onChange={handleInputChange}
                       required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200"
-                      placeholder="your@email.com"
+                      placeholder={t('booking.placeholders.email')}
                     />
                   </div>
                 </div>
@@ -343,7 +333,9 @@ export default function Booking() {
                 {/* Event Type & Location */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="eventType" className="block text-white/70 text-sm mb-2">{inquiryType === 'dj' ? 'Event Type' : 'Producer Request'}</label>
+                    <label htmlFor="eventType" className="block text-white/70 text-sm mb-2">
+                      {isDj ? t('booking.fields.eventType') : t('booking.fields.producerRequest')}
+                    </label>
                     <select
                       id="eventType"
                       name="eventType"
@@ -352,16 +344,16 @@ export default function Booking() {
                       required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-armah-red focus:outline-none transition-colors duration-200 appearance-none cursor-pointer"
                     >
-                      <option value="" className="bg-black">Select type</option>
-                      {(inquiryType === 'dj' ? DJ_EVENT_TYPES : PRODUCER_TYPES).map((t) => (
-                        <option key={t.value} value={t.value} className="bg-black">
-                          {t.label}
+                      <option value="" className="bg-black">{t('booking.placeholders.selectType')}</option>
+                      {(isDj ? DJ_EVENT_TYPES : PRODUCER_TYPES).map((v) => (
+                        <option key={v} value={v} className="bg-black">
+                          {isDj ? t(`booking.djEventTypes.${v}`) : t(`booking.producerTypes.${v}`)}
                         </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="location" className="block text-white/70 text-sm mb-2">Location</label>
+                    <label htmlFor="location" className="block text-white/70 text-sm mb-2">{t('booking.fields.location')}</label>
                     <input
                       type="text"
                       id="location"
@@ -370,7 +362,7 @@ export default function Booking() {
                       onChange={handleInputChange}
                       required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200"
-                      placeholder="City, Country"
+                      placeholder={t('booking.placeholders.location')}
                     />
                   </div>
                 </div>
@@ -378,7 +370,7 @@ export default function Booking() {
                 {inquiryType === 'producer' && formData.eventType === 'beat_license' ? (
                   <div>
                     <label htmlFor="beatId" className="block text-white/70 text-sm mb-2">
-                      Select Beat
+                      {t('booking.fields.beatSelect')}
                     </label>
 
                     <select
@@ -389,22 +381,22 @@ export default function Booking() {
                       required
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-armah-red focus:outline-none transition-colors duration-200 appearance-none cursor-pointer"
                     >
-                      <option value="" className="bg-black">Choose a beat</option>
-                      <optgroup label="Afro" className="bg-black">
+                      <option value="" className="bg-black">{t('booking.placeholders.chooseBeat')}</option>
+                      <optgroup label={t('booking.beatGroups.afro')} className="bg-black">
                         {beatOptions.filter((b: BeatOption) => b.mood === 'Afro').map((b: BeatOption) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
                         ))}
                       </optgroup>
-                      <optgroup label="Drill" className="bg-black">
+                      <optgroup label={t('booking.beatGroups.drill')} className="bg-black">
                         {beatOptions.filter((b: BeatOption) => b.mood === 'Drill').map((b: BeatOption) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
                           </option>
                         ))}
                       </optgroup>
-                      <optgroup label="Trap" className="bg-black">
+                      <optgroup label={t('booking.beatGroups.trap')} className="bg-black">
                         {beatOptions.filter((b: BeatOption) => b.mood === 'Trap').map((b: BeatOption) => (
                           <option key={b.id} value={b.id} className="bg-black">
                             {b.title} • {b.bpm} BPM
@@ -415,12 +407,12 @@ export default function Booking() {
 
                     {selectedBeat ? (
                       <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                        <div className="text-white/60 text-xs tracking-wide uppercase">Selected beat</div>
+                        <div className="text-white/60 text-xs tracking-wide uppercase">{t('booking.selectedBeat.title')}</div>
                         <div className="mt-1 text-white font-semibold">
                           {selectedBeat.title}
                         </div>
                         <div className="mt-1 text-white/60 text-sm">
-                          <span className="text-white/70">ID:</span> {selectedBeat.id} &nbsp;•&nbsp; <span className="text-white/70">BPM:</span> {selectedBeat.bpm} &nbsp;•&nbsp; <span className="text-white/70">Genre:</span> {selectedBeat.mood}
+                          <span className="text-white/70">{t('booking.selectedBeat.id')}:</span> {selectedBeat.id} &nbsp;•&nbsp; <span className="text-white/70">{t('booking.selectedBeat.bpm')}:</span> {selectedBeat.bpm} &nbsp;•&nbsp; <span className="text-white/70">{t('booking.selectedBeat.genre')}:</span> {selectedBeat.mood}
                         </div>
                       </div>
                     ) : null}
@@ -429,7 +421,7 @@ export default function Booking() {
 
                 {/* Message */}
                 <div>
-                  <label htmlFor="message" className="block text-white/70 text-sm mb-2">Message</label>
+                  <label htmlFor="message" className="block text-white/70 text-sm mb-2">{t('booking.fields.message')}</label>
                   <textarea
                     id="message"
                     name="message"
@@ -438,7 +430,7 @@ export default function Booking() {
                     required
                     rows={5}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200 resize-none"
-                    placeholder={inquiryType === 'dj' ? 'Tell us about your event...' : 'Tell us what you need (license, custom beat, collab, etc.)...'}
+                    placeholder={isDj ? t('booking.placeholders.messageDj') : t('booking.placeholders.messageProducer')}
                   />
                 </div>
 
@@ -448,7 +440,7 @@ export default function Booking() {
                   disabled={isSending}
                   className={`w-full bg-armah-red hover:bg-[#ff4d56] text-white font-head px-8 py-4 text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)] flex items-center justify-center gap-3 ${isSending ? 'opacity-70 cursor-not-allowed hover:shadow-none' : ''}`}
                 >
-                  <span>{isSending ? 'Sending…' : 'Send Inquiry'}</span>
+                  <span>{isSending ? t('booking.sending') : t('booking.send')}</span>
                   <Send className="w-4 h-4" />
                 </button>
               </form>

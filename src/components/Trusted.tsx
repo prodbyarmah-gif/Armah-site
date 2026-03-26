@@ -1,7 +1,9 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from 'react'
 import { highlights, selectedShows } from '../data/armah'
 
 export default function Trusted(): JSX.Element {
+  const { t } = useI18n();
   const [index, setIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const touchStartX = useRef<number | null>(null)
@@ -41,7 +43,7 @@ export default function Trusted(): JSX.Element {
     <section id="shows" className="relative w-full bg-black py-24 md:py-32">
       <div className="w-full px-6 lg:px-12 xl:px-24">
         <div className="text-center mb-8">
-          <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">SHOWS &amp; HIGHLIGHTS</h2>
+          <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">{t("trusted.title")}</h2>
           <div className="w-20 h-0.5 bg-armah-red mt-6 mx-auto" />
         </div>
 
@@ -71,14 +73,14 @@ export default function Trusted(): JSX.Element {
 
             {/* Arrows */}
             <button
-              aria-label="Previous"
+              aria-label={t("trusted.prev")}
               onClick={prev}
               className="absolute top-1/2 -translate-y-1/2 left-10 md:left-14 pointer-events-auto z-50 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer select-none touch-manipulation text-white bg-black/40 hover:bg-black/60 focus:outline-none"
             >
               ‹
             </button>
             <button
-              aria-label="Next"
+              aria-label={t("trusted.next")}
               onClick={next}
               className="absolute top-1/2 -translate-y-1/2 right-10 md:right-14 pointer-events-auto z-50 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer select-none touch-manipulation text-white bg-black/40 hover:bg-black/60 focus:outline-none"
             >

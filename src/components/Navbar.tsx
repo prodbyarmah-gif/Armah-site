@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n'
+import LanguageToggle from './LanguageToggle'
 
-type NavLink = { label: string; href: string }
+type NavLinkKey = 'live' | 'shows' | 'producer' | 'booking'
+
+type NavLink = { key: NavLinkKey; href: string }
 
 export default function Navbar(): JSX.Element {
   const [open, setOpen] = useState(false)
   const [isAtTop, setIsAtTop] = useState(true)
-  const lastScrollY = useRef(0)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const { t } = useI18n()
 
   const links: NavLink[] = [
-    { label: 'LIVE', href: '#live' },
-    { label: 'SHOWS', href: '#shows' },
-    { label: 'PRODUCER', href: '#producer' },
-    { label: 'BOOKING', href: '#booking' },
+    { key: 'live', href: '#live' },
+    { key: 'shows', href: '#shows' },
+    { key: 'producer', href: '#producer' },
+    { key: 'booking', href: '#booking' },
   ]
 
   const mid = Math.ceil(links.length / 2)
@@ -48,11 +52,9 @@ export default function Navbar(): JSX.Element {
     function onScroll() {
       const y = window.scrollY || 0
       setIsAtTop(y <= 10)
-      lastScrollY.current = y
     }
 
     const initialY = window.scrollY || 0
-    lastScrollY.current = initialY
     setIsAtTop(initialY <= 10)
 
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -72,6 +74,9 @@ export default function Navbar(): JSX.Element {
     >
       <nav className="relative max-w-6xl mx-auto px-6 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div className="flex items-center justify-center h-16 relative">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
+            <LanguageToggle />
+          </div>
           <div className="flex-1 hidden md:flex justify-end gap-8">
             {leftLinks.map((l) => (
               <a
@@ -80,7 +85,7 @@ export default function Navbar(): JSX.Element {
                 onClick={handleLinkClick}
                 className="text-sm text-white hover:underline py-3 px-2 cursor-pointer font-head tracking-wide"
               >
-                {l.label}
+                {t(`nav.${l.key}`)}
               </a>
             ))}
           </div>
@@ -103,7 +108,7 @@ export default function Navbar(): JSX.Element {
                 onClick={handleLinkClick}
                 className="text-sm text-white hover:underline py-3 px-2 cursor-pointer font-head tracking-wide"
               >
-                {l.label}
+                {t(`nav.${l.key}`)}
               </a>
             ))}
           </div>
@@ -131,6 +136,9 @@ export default function Navbar(): JSX.Element {
       {open && (
         <div ref={menuRef} className="md:hidden bg-black/80 border-t border-white/10 backdrop-blur-sm">
           <div className="px-4 pt-2 pb-4 space-y-2">
+            <div className="pb-2">
+              <LanguageToggle />
+            </div>
             {links.map((l) => (
               <a
                 key={l.href + '-mobile'}
@@ -138,7 +146,7 @@ export default function Navbar(): JSX.Element {
                 onClick={handleLinkClick}
                 className="block text-white text-base font-head tracking-wide"
               >
-                {l.label}
+                {t(`nav.${l.key}`)}
               </a>
             ))}
           </div>

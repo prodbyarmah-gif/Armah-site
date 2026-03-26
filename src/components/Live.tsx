@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useI18n } from "../i18n";
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Play } from 'lucide-react';
 
 interface Clip {
@@ -9,38 +10,40 @@ interface Clip {
 }
 
 export default function Live() {
+  const { t } = useI18n();
+
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedClipId, setSelectedClipId] = useState<string>('01');
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  const clips: Clip[] = [
+  const clips: Clip[] = useMemo(() => [
     {
       id: '01',
-      title: 'Live Clip 01',
+      title: `${t("live.clipLabel")} 01`,
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01_web.mp4',
       posterUrl: '/assets/live01.jpg',
     },
     {
       id: '02',
-      title: 'Live Clip 02',
+      title: `${t("live.clipLabel")} 02`,
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02_web.mp4',
       posterUrl: '/assets/live02.jpg',
     },
     {
       id: '03',
-      title: 'Live Clip 03',
+      title: `${t("live.clipLabel")} 03`,
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03_signature_smaller.mp4',
       posterUrl: '/assets/live03.jpg',
     },
     {
       id: '04',
-      title: 'Live Clip 04',
+      title: `${t("live.clipLabel")} 04`,
       videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04_web.mp4',
       posterUrl: '/assets/live04.jpg',
     },
-  ];
+  ], [t]);
 
   const selectedClip = clips.find((clip) => clip.id === selectedClipId) || clips[0];
 
@@ -121,7 +124,7 @@ export default function Live() {
           }`}
         >
           <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">
-            Live Moments
+            {t("live.title")}
           </h2>
           <div className="w-20 h-0.5 bg-armah-red mt-6 mx-auto" />
         </div>

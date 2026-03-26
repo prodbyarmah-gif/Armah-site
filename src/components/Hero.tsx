@@ -1,6 +1,8 @@
+import { useI18n } from "../i18n";
 import { siteConfig } from '../data/armah';
 
 export default function Hero() {
+  const { t } = useI18n();
   const scrollToBooking = () => {
     document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -31,7 +33,8 @@ export default function Hero() {
         
         {/* Subline */}
         <p className="text-white/80 text-lg sm:text-xl md:text-2xl tracking-wide max-w-2xl mx-auto mb-12">
-          {siteConfig.tagline}
+          
+          {t("hero.tagline")}
         </p>
         
         {/* CTA Button */}
@@ -39,7 +42,8 @@ export default function Hero() {
           onClick={scrollToBooking}
           className="bg-armah-red hover:bg-[#ff4d56] text-white font-head text-sm tracking-[0.2em] uppercase px-10 py-4 transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)]"
         >
-          Booking Inquiry
+         
+          {t("hero.cta")}
         </button>
       </div>
       

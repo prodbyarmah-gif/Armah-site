@@ -1,7 +1,9 @@
+import { useI18n } from "../i18n";
 import { useState, useEffect, useRef } from 'react';
 import { selectedShows } from '../data/armah';
 
 export default function Shows() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -33,7 +35,7 @@ export default function Shows() {
         {/* Section Title */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">
-            Selected Shows
+            {t("title_selected_shows")}
           </h2>
           <div className="w-20 h-0.5 bg-armah-red mt-6 mx-auto" />
         </div>

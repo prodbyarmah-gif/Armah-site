@@ -1,7 +1,9 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from 'react';
 import { Youtube, ExternalLink } from 'lucide-react';
 
 export default function Instagram() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -33,7 +35,7 @@ export default function Instagram() {
           }`}
         >
           <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">
-            YouTube
+            {t("youtube.title")}
           </h2>
           <div className="w-20 h-0.5 bg-armah-red mt-6 mx-auto" />
         </div>
@@ -52,7 +54,7 @@ export default function Instagram() {
                 <iframe
                   className="absolute inset-0 h-full w-full"
                   src={youtubeEmbedUrl}
-                  title="ARMAH - YouTube"
+                  title={t("youtube.iframeTitle")}
                   loading="lazy"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
@@ -73,10 +75,10 @@ export default function Instagram() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 text-white/70 hover:text-armah-red transition-colors duration-200 group"
-            title="Open on YouTube"
+            title={t("youtube.openOnYoutube")}
           >
             <Youtube className="w-5 h-5" />
-            <span className="text-sm tracking-wide">Watch on YouTube</span>
+            <span className="text-sm tracking-wide">{t("youtube.watch")}</span>
             <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           </a>
         </div>

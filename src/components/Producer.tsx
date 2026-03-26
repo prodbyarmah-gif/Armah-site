@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from 'react';
 import { Music } from 'lucide-react';
 
@@ -172,7 +173,23 @@ export const beatOptionsById: Record<string, BeatOption> = Object.fromEntries(
 const waveRegistry = new Map<string, WaveInstance>();
 let currentlyPlayingId: string | null = null;
 
-function WaveformPreview({ id, url, accentClass }: { id: string; url: string; accentClass?: string }) {
+function WaveformPreview({
+  id,
+  url,
+  accentClass,
+  i18n,
+}: {
+  id: string;
+  url: string;
+  accentClass?: string;
+  i18n: {
+    play: string;
+    pause: string;
+    previewUnavailable: string;
+    previewSeekHint: string;
+    loading: string;
+  };
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const waveRef = useRef<WaveInstance | null>(null);
   const readyRef = useRef(false);
@@ -370,8 +387,8 @@ function WaveformPreview({ id, url, accentClass }: { id: string; url: string; ac
         onClick={toggle}
         disabled={!isReady}
         className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.03] text-white/80 transition hover:border-white/25 hover:bg-white/[0.06] disabled:opacity-40 ${accentClass ?? ''}`}
-        aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
-        title={isPlaying ? 'Pause' : 'Play'}
+        aria-label={isPlaying ? i18n.pause : i18n.play}
+        title={isPlaying ? i18n.pause : i18n.play}
       >
         <span className="text-sm font-semibold">{isPlaying ? 'II' : '▶'}</span>
       </button>
@@ -380,10 +397,10 @@ function WaveformPreview({ id, url, accentClass }: { id: string; url: string; ac
         <div ref={containerRef} className="w-full overflow-hidden" />
         <div className="mt-0.5 text-[10px] text-white/40">
           {hasError
-            ? 'Preview unavailable'
+            ? i18n.previewUnavailable
             : isReady
-            ? 'Preview (click waveform to seek)'
-            : 'Loading preview…'}
+            ? i18n.previewSeekHint
+            : i18n.loading}
         </div>
       </div>
     </div>
@@ -391,6 +408,7 @@ function WaveformPreview({ id, url, accentClass }: { id: string; url: string; ac
 }
 
 export default function Producer() {
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -432,7 +450,7 @@ export default function Producer() {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">Producer</h2>
+          <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">{t('producer.title')}</h2>
           <div className="w-20 h-0.5 bg-armah-purple mt-6 mx-auto" />
         </div>
 
@@ -443,7 +461,7 @@ export default function Producer() {
           }`}
         >
           <p className="text-white/60 text-lg md:text-xl tracking-wide">
-            Current collaboration: <span className="text-white font-medium">Stephen Jounior</span>
+            {t('producer.currentCollabLabel')}: <span className="text-white font-medium">Stephen Jounior</span>
           </p>
         </div>
 
@@ -457,7 +475,7 @@ export default function Producer() {
             <div key={track.id} className="relative">
               <div className="flex items-center gap-3 mb-4">
                 <Music className="w-5 h-5 text-[#1DB954]" />
-                <span className="text-white/80 text-sm font-medium tracking-wide">Spotify</span>
+                <span className="text-white/80 text-sm font-medium tracking-wide">{t('producer.spotifyLabel')}</span>
               </div>
               <div className="relative rounded-lg overflow-hidden bg-white/5">
                 <iframe
@@ -483,9 +501,9 @@ export default function Producer() {
           }`}
         >
           <div className="text-center mb-10">
-            <h3 className="font-head text-3xl md:text-4xl text-white uppercase tracking-tight">Beat Catalog</h3>
+            <h3 className="font-head text-3xl md:text-4xl text-white uppercase tracking-tight">{t('beatCatalog.title')}</h3>
             <div className="w-20 h-0.5 bg-armah-purple mt-6 mx-auto" />
-            <p className="text-white/60 mt-4 max-w-2xl mx-auto">Browse a few drafts & collaborations.</p>
+            <p className="text-white/60 mt-4 max-w-2xl mx-auto">{t('beatCatalog.subtitle')}</p>
           </div>
 
           {/* Genre Carousel */}
@@ -502,7 +520,7 @@ export default function Producer() {
                       : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20 hover:bg-white/[0.04]'
                     }`}
                 >
-                  {g}
+                  {t(`beatCatalog.genres.${g.toLowerCase()}`)}
                 </button>
               ))}
             </div>
@@ -513,7 +531,7 @@ export default function Producer() {
             {activeGenre === 'Afro' && afro.length ? (
               <div>
                 <div className="mt-8 first:mt-0 flex items-baseline justify-between">
-                  <h4 className="text-white font-semibold tracking-wide">AFRO</h4>
+                  <h4 className="text-white font-semibold tracking-wide">{t('beatCatalog.genres.afro').toUpperCase()}</h4>
                   <span className="text-white/60 text-[11px]">({afro.length})</span>
                 </div>
                 <div className="mt-3 h-px w-full bg-white/10" />
@@ -527,11 +545,14 @@ export default function Producer() {
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-white text-sm font-semibold leading-tight">{b.title}</p>
-                          <p className="text-white/60 text-[11px] mt-0.5">{b.mood}{b.credits?.length ? ` • with ${b.credits.join(' · ')}` : ''}</p>
+                          <p className="text-white/60 text-[11px] mt-0.5">
+                            {b.mood}
+                            {b.credits?.length ? ` • ${t('beatCatalog.with')} ${b.credits.join(' · ')}` : ''}
+                          </p>
                         </div>
 
                         <div className="text-right">
-                          <p className="text-white/80 text-[11px]">{b.bpm} BPM</p>
+                          <p className="text-white/80 text-[11px]">{b.bpm} {t('beatCatalog.bpm')}</p>
                         </div>
                       </div>
 
@@ -551,7 +572,18 @@ export default function Producer() {
                       ) : null}
 
                       <div className="mt-2">
-                        <WaveformPreview id={b.id} url={b.previewUrl} accentClass="" />
+                        <WaveformPreview
+                          id={b.id}
+                          url={b.previewUrl}
+                          accentClass=""
+                          i18n={{
+                            play: t('beatCatalog.previewPlay'),
+                            pause: t('beatCatalog.previewPause'),
+                            previewUnavailable: t('common.previewUnavailable'),
+                            previewSeekHint: t('beatCatalog.previewSeekHint'),
+                            loading: t('common.loading'),
+                          }}
+                        />
                       </div>
 
                       <div className="mt-3">
@@ -567,11 +599,11 @@ export default function Producer() {
                           }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
-                          License inquiry
+                          {t('beatCatalog.licenseInquiry')}
                         </button>
                       </div>
 
-                      <p className="text-white/30 text-xs mt-2">ID: {b.id} • Non-exclusive / exclusive available</p>
+                      <p className="text-white/30 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
                     </div>
                   ))}
                 </div>
@@ -582,7 +614,7 @@ export default function Producer() {
             {activeGenre === 'Drill' && drill.length ? (
               <div>
                 <div className="mt-8 first:mt-0 flex items-baseline justify-between">
-                  <h4 className="text-white font-semibold tracking-wide">DRILL</h4>
+                  <h4 className="text-white font-semibold tracking-wide">{t('beatCatalog.genres.drill').toUpperCase()}</h4>
                   <span className="text-white/60 text-[11px]">({drill.length})</span>
                 </div>
                 <div className="mt-3 h-px w-full bg-white/10" />
@@ -596,11 +628,14 @@ export default function Producer() {
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-white text-sm font-semibold leading-tight">{b.title}</p>
-                          <p className="text-white/60 text-[11px] mt-0.5">{b.mood}{b.credits?.length ? ` • with ${b.credits.join(' · ')}` : ''}</p>
+                          <p className="text-white/60 text-[11px] mt-0.5">
+                            {b.mood}
+                            {b.credits?.length ? ` • ${t('beatCatalog.with')} ${b.credits.join(' · ')}` : ''}
+                          </p>
                         </div>
 
                         <div className="text-right">
-                          <p className="text-white/80 text-[11px]">{b.bpm} BPM</p>
+                          <p className="text-white/80 text-[11px]">{b.bpm} {t('beatCatalog.bpm')}</p>
                         </div>
                       </div>
 
@@ -620,7 +655,18 @@ export default function Producer() {
                       ) : null}
 
                       <div className="mt-2">
-                        <WaveformPreview id={b.id} url={b.previewUrl} accentClass="" />
+                        <WaveformPreview
+                          id={b.id}
+                          url={b.previewUrl}
+                          accentClass=""
+                          i18n={{
+                            play: t('beatCatalog.previewPlay'),
+                            pause: t('beatCatalog.previewPause'),
+                            previewUnavailable: t('common.previewUnavailable'),
+                            previewSeekHint: t('beatCatalog.previewSeekHint'),
+                            loading: t('common.loading'),
+                          }}
+                        />
                       </div>
 
                       <div className="mt-3">
@@ -636,11 +682,11 @@ export default function Producer() {
                           }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
-                          License inquiry
+                          {t('beatCatalog.licenseInquiry')}
                         </button>
                       </div>
 
-                      <p className="text-white/30 text-xs mt-2">ID: {b.id} • Non-exclusive / exclusive available</p>
+                      <p className="text-white/30 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
                     </div>
                   ))}
                 </div>
@@ -651,7 +697,7 @@ export default function Producer() {
             {activeGenre === 'Trap' && trap.length ? (
               <div>
                 <div className="mt-8 first:mt-0 flex items-baseline justify-between">
-                  <h4 className="text-white font-semibold tracking-wide">TRAP</h4>
+                  <h4 className="text-white font-semibold tracking-wide">{t('beatCatalog.genres.trap').toUpperCase()}</h4>
                   <span className="text-white/60 text-[11px]">({trap.length})</span>
                 </div>
                 <div className="mt-3 h-px w-full bg-white/10" />
@@ -665,11 +711,14 @@ export default function Producer() {
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-white text-sm font-semibold leading-tight">{b.title}</p>
-                          <p className="text-white/60 text-[11px] mt-0.5">{b.mood}{b.credits?.length ? ` • with ${b.credits.join(' · ')}` : ''}</p>
+                          <p className="text-white/60 text-[11px] mt-0.5">
+                            {b.mood}
+                            {b.credits?.length ? ` • ${t('beatCatalog.with')} ${b.credits.join(' · ')}` : ''}
+                          </p>
                         </div>
 
                         <div className="text-right">
-                          <p className="text-white/80 text-[11px]">{b.bpm} BPM</p>
+                          <p className="text-white/80 text-[11px]">{b.bpm} {t('beatCatalog.bpm')}</p>
                         </div>
                       </div>
 
@@ -689,7 +738,18 @@ export default function Producer() {
                       ) : null}
 
                       <div className="mt-2">
-                        <WaveformPreview id={b.id} url={b.previewUrl} accentClass="" />
+                        <WaveformPreview
+                          id={b.id}
+                          url={b.previewUrl}
+                          accentClass=""
+                          i18n={{
+                            play: t('beatCatalog.previewPlay'),
+                            pause: t('beatCatalog.previewPause'),
+                            previewUnavailable: t('common.previewUnavailable'),
+                            previewSeekHint: t('beatCatalog.previewSeekHint'),
+                            loading: t('common.loading'),
+                          }}
+                        />
                       </div>
 
                       <div className="mt-3">
@@ -705,11 +765,11 @@ export default function Producer() {
                           }}
                           className="inline-flex items-center justify-center w-full rounded-lg bg-armah-purple text-white font-semibold py-2 hover:opacity-90 transition"
                         >
-                          License inquiry
+                          {t('beatCatalog.licenseInquiry')}
                         </button>
                       </div>
 
-                      <p className="text-white/30 text-xs mt-2">ID: {b.id} • Non-exclusive / exclusive available</p>
+                      <p className="text-white/30 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
                     </div>
                   ))}
                 </div>
@@ -718,7 +778,7 @@ export default function Producer() {
           </div>
 
           <div className="mt-10 text-center text-white/60 text-sm">
-            <span className="text-white/80 font-semibold">Licensing:</span> Non-exclusive • Exclusive • Custom / Sync (ask)
+            <span className="text-white/80 font-semibold">{t('beatCatalog.licensingLabel')}:</span> {t('beatCatalog.licensingText')}
           </div>
         </div>
 

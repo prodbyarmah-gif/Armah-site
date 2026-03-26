@@ -1,7 +1,9 @@
+import { useI18n } from "../i18n";
 import { Instagram, Music, Mail } from 'lucide-react';
 import { siteConfig } from '../data/armah';
 
 export default function Footer() {
+  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
   const scrollToSection = (id: string) => {
@@ -28,21 +30,27 @@ export default function Footer() {
                 className="h-8 w-auto mx-auto md:mx-0 mb-4 object-contain"
               />
               <p className="text-white/50 text-sm tracking-wide">
-                Built in rhythm. Played worldwide.
+               {t("footer.tagline")}
               </p>
             </div>
 
             {/* Navigation */}
             <div className="text-center">
-              <h4 className="text-white font-head mb-4 tracking-wide uppercase">Navigation</h4>
+              <h4 className="text-white font-head mb-4 tracking-wide uppercase">{t("footer.navigation")}</h4>
               <ul className="space-y-2">
-                {['Live', 'Shows', 'Producer', 'Booking'].map((item) => (
-                  <li key={item}>
+                {[
+                  { label: t("nav.live"), id: "live" },
+                  { label: t("nav.shows"), id: "shows" },
+                  { label: t("nav.producer"), id: "producer" },
+                  { label: t("nav.booking"), id: "booking" },
+                ].map((item) => (
+                  <li key={item.id}>
                     <button
-                      onClick={() => scrollToSection(item.toLowerCase())}
+                      type="button"
+                      onClick={() => scrollToSection(item.id)}
                       className="text-white/50 hover:text-armah-red text-sm transition-colors duration-200"
                     >
-                      {item}
+                      {item.label}
                     </button>
                   </li>
                 ))}
@@ -51,7 +59,7 @@ export default function Footer() {
 
             {/* Social */}
             <div className="text-center md:text-right">
-              <h4 className="text-white font-head mb-4 tracking-wide uppercase">Connect</h4>
+              <h4 className="text-white font-head mb-4 tracking-wide uppercase">{t("footer.connect")}</h4>
               <div className="flex items-center justify-center md:justify-end gap-4">
                 <a
                   href={siteConfig.instagram}
@@ -92,17 +100,17 @@ export default function Footer() {
                 href="/legal/impressum.html"
                 className="text-white/40 hover:text-armah-red text-sm transition-colors duration-200"
               >
-                Impressum
+                {t("legal.impressum")}
               </a>
               <a
                 href="/legal/datenschutz.html"
                 className="text-white/40 hover:text-armah-red text-sm transition-colors duration-200"
               >
-                Datenschutz
+                {t("legal.privacy")}
               </a>
             </div>
             <p className="text-white/30 text-sm">
-              &copy; {currentYear} ARMAH. All rights reserved.
+             &copy; {currentYear} ARMAH. {t("footer.rights")}
             </p>
           </div>
         </div>
