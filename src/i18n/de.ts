@@ -6,20 +6,42 @@ const de = {
   },
 
   nav: {
+    about: "BIO",
     live: "LIVE",
     shows: "SHOWS",
+    beats: "BEAT",
     producer: "PRODUCER",
     booking: "BOOKING",
   },
 
   hero: {
-    tagline: "Afro- & Amapiano-DJ — aus Hamburg, international unterwegs.",
+    tagline: "Afrobeats, Amapiano aus Hamburg - gemacht für volle Dancefloors.",
     cta: "BOOKING ANFRAGE",
   },
 
   live: {
     title: "LIVE MOMENTS",
     clipLabel: "Live Clip",
+  },
+
+  about: {
+    eyebrow: "BIO",
+    title: "WER IST ARMAH?",
+    short: "Hamburg-based DJ & Producer mit ghanaischen Wurzeln, globalem Sound und echter Club-Energie.",
+    paragraph1:
+      "Armah ist DJ und Producer aus Hamburg mit ghanaischen Wurzeln und einem Sound, der Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB und Dancehall miteinander verbindet.",
+    paragraph2:
+      "Sein Stil ist energiegeladen, rhythmisch und crowd-focused. Statt einfach nur Songs abzuspielen, baut Armah Sets, die Bewegung erzeugen, Übergänge bewusst setzen und den Raum lesen. Ob Club, Event oder Brand Activation: Sein Ziel ist immer derselbe Moment, in dem die Crowd nicht mehr nur zuhört, sondern komplett drin ist.",
+    paragraph3:
+      "Mit Auftritten unter anderem im Golden Cut, BRICKS Berlin, Edelfettwerk, YOTO Hamburg, Foot Locker Events und vor größeren Crowds bringt Armah Erfahrung aus verschiedenen Bühnen, Venues und Setups mit. Dabei steht er für einen Sound, der global klingt, aber trotzdem nah an Kultur, Community und echter Club-Energie bleibt.",
+    paragraph4:
+      "Neben seiner Arbeit als DJ produziert Armah eigene Musik, arbeitet an kreativen Projekten und ist Co-Founder von ZAYA Dreams, einem Hamburger Eventkonzept mit Fokus auf Culture, Sound und Community.",
+    facts: {
+      base: "Hamburg",
+      roots: "Ghanaische Wurzeln",
+      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      project: "Co-Founder von ZAYA Dreams",
+    },
   },
 
   shows: {
@@ -43,11 +65,14 @@ const de = {
     title: "PRODUCER",
     currentCollabLabel: "Aktuelle Kollaboration",
     spotifyLabel: "Spotify",
+    openSpotify: "Spotify öffnen",
   },
 
   beatCatalog: {
     title: "BEAT-KATALOG",
     subtitle: "Ein paar Drafts & Kollaborationen.",
+    demoLabel: "Demo-Hinweis",
+    demoDisclaimer: "Hinweis: Alle Previews sind Demo-Skizzen und keine final fertig produzierten Beats.",
     previewSeekHint: "Preview (Waveform klicken zum Springen)",
     licenseInquiry: "Lizenz anfragen",
     genres: {
@@ -56,9 +81,9 @@ const de = {
       trap: "Trap",
     },
     idLabel: "ID",
-    termsLine: "Non-exclusive / exclusive verfügbar",
+    termsLine: "Nicht-exklusiv / exklusiv verfügbar",
     licensingLabel: "Lizenzierung",
-    licensingText: "Non-exclusive • Exclusive • Custom / Sync (anfragen)",
+    licensingText: "Nicht-exklusiv • Exklusiv • Custom / Sync (anfragen)",
     previewPlay: "Abspielen",
     previewPause: "Pause",
     with: "mit",
@@ -100,7 +125,7 @@ const de = {
       location: "Stadt, Land",
       chooseBeat: "Beat auswählen…",
       messageDj: "Erzähl uns kurz vom Event…",
-      messageProducer: "Sag uns, was du brauchst (License, Custom Beat, Collab, etc.)…",
+      messageProducer: "Sag uns, was du brauchst (Lizenz, Custom Beat, Collab, etc.)…",
     },
 
     djEventTypes: {
@@ -149,14 +174,14 @@ const de = {
 
     send: "ANFRAGE SENDEN",
 
-    technicalRider: "Technischer Rider",
-hospitalityRider: "Hospitality (Rider)",
+    technicalRider: "Technik-Rider",
+    hospitalityRider: "Hospitality-Rider",
   },
 
   footer: {
     tagline: "Built in rhythm. Played worldwide.",
     navigation: "Navigation",
-    connect: "Connect",
+    connect: "Kontakt",
     rights: "Alle Rechte vorbehalten.",
   },
 

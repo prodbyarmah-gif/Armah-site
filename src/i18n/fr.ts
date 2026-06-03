@@ -7,8 +7,10 @@ const fr = {
 
   // Nested i18n (used by UI)
   nav: {
+    about: "BIO",
     live: "LIVE",
     shows: "SHOWS",
+    beats: "BEAT",
     producer: "PRODUCTEUR",
     booking: "BOOKING",
   },
@@ -28,6 +30,27 @@ const fr = {
   live: {
     title: "MOMENTS LIVE",
     clipLabel: "Clip live",
+  },
+
+  about: {
+    eyebrow: "BIO",
+    title: "À PROPOS D’ARMAH",
+    short:
+      "Armah est un DJ et producteur basé à Hambourg, aux racines ghanéennes, qui mêle Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB et Dancehall dans des sets énergiques.",
+    paragraph1:
+      "Armah est un DJ et producteur basé à Hambourg, aux racines ghanéennes, avec un son qui relie Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB et Dancehall.",
+    paragraph2:
+      "Son style est énergique, rythmique et pensé pour le public. Il construit des sets qui créent du mouvement, posent les transitions avec intention et lisent l’énergie de la salle.",
+    paragraph3:
+      "Avec des passages dans des clubs, événements de marque et devant de plus grandes foules, notamment Golden Cut, BRICKS Berlin, Edelfettwerk, YOTO Hamburg et Foot Locker, Armah apporte une vraie expérience de scène.",
+    paragraph4:
+      "En parallèle du DJing, Armah produit sa propre musique, développe des projets créatifs et est cofondateur de ZAYA Dreams, un concept événementiel hambourgeois centré sur la culture, le son et la communauté.",
+    facts: {
+      base: "Basé à Hambourg",
+      roots: "Racines ghanéennes",
+      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      project: "Cofondateur de ZAYA Dreams",
+    },
   },
 
   shows: {
@@ -52,11 +75,14 @@ const fr = {
     title: "PRODUCER",
     currentCollabLabel: "Collaboration actuelle",
     spotifyLabel: "Spotify",
+    openSpotify: "Ouvrir sur Spotify",
   },
 
   beatCatalog: {
     title: "CATALOGUE DE BEATS",
     subtitle: "Quelques démos et collaborations.",
+    demoLabel: "Note démo",
+    demoDisclaimer: "Note : tous les aperçus sont des maquettes démo, pas des beats finalisés.",
     previewSeekHint: "Aperçu (clique sur la forme d’onde pour avancer)",
     licenseInquiry: "Demande de licence",
     genres: {

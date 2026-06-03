@@ -39,6 +39,7 @@ export default function Footer() {
               <h4 className="text-white font-head mb-4 tracking-wide uppercase">{t("footer.navigation")}</h4>
               <ul className="space-y-2">
                 {[
+                  { label: t("nav.about"), id: "about" },
                   { label: t("nav.live"), id: "live" },
                   { label: t("nav.shows"), id: "shows" },
                   { label: t("nav.producer"), id: "producer" },

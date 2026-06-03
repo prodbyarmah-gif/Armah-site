@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from 'react';
-import { Music } from 'lucide-react';
+import { AlertTriangle, ExternalLink, Music, Play } from 'lucide-react';
 
 import WaveSurfer from 'wavesurfer.js';
 
@@ -9,46 +9,35 @@ type WaveInstance = ReturnType<typeof WaveSurfer.create>;
 
 
 
-// Self-contained Spotify embeds (no dependency on ../data/armah)
-type ProducerTrack = { id: string; title: string; url: string };
+// Self-contained Spotify links (no dependency on ../data/armah)
+type ProducerTrack = { id: string; title: string; artists: string; url: string };
 
 const producerTracks: ProducerTrack[] = [
   {
     id: 'T001',
-    title: 'Track 01',
+    title: 'Comeback Season',
+    artists: 'Stephen Jounior',
     url: 'https://open.spotify.com/intl-de/track/4OHgaDZPsAemSCikAgFKqr?si=ed4505e96e144fae',
   },
   {
     id: 'T002',
-    title: 'Track 02',
+    title: 'Break From Germany',
+    artists: 'Stephen Jounior, Yima Malik',
     url: 'https://open.spotify.com/intl-de/track/38ZFS6DGwTP6BL0mEVUEdI?si=88feede361974aee',
   },
   {
     id: 'T003',
-    title: 'Track 03',
+    title: 'Bundesliga',
+    artists: 'Stephen Jounior, NK3',
     url: 'https://open.spotify.com/intl-de/track/3Mf5jsUc30w9PAfrM5LWvK?si=c5b2f6818b364c7d',
   },
   {
     id: 'T004',
-    title: 'Track 04',
+    title: 'Berlin Wall',
+    artists: 'Stephen Jounior, YXNGBOIQ, Yima Malik',
     url: 'https://open.spotify.com/intl-de/track/4SrqKPTiHd2BQXntPMiz5a?si=3acd362682874731',
   },
 ];
-
-function toSpotifyEmbed(url: string): string {
-  // Accept track URLs with query params and convert to embed
-  // Example: https://open.spotify.com/track/<id> -> https://open.spotify.com/embed/track/<id>
-  try {
-    const u = new URL(url);
-    const parts = u.pathname.split('/').filter(Boolean);
-    // expected: ['intl-de','track','<id>'] OR ['track','<id>']
-    const trackIdx = parts.indexOf('track');
-    const id = trackIdx >= 0 ? parts[trackIdx + 1] : parts[parts.length - 1];
-    return `https://open.spotify.com/embed/track/${id}`;
-  } catch {
-    return url;
-  }
-}
 
 export type BeatMood = 'Afro' | 'Drill' | 'Trap';
 
@@ -465,37 +454,54 @@ export default function Producer() {
           </p>
         </div>
 
-        {/* Spotify Embeds */}
+        {/* Spotify Links */}
         <div
-          className={`grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto transition-all duration-700 delay-200 ${
+          className={`mx-auto mb-5 flex w-full max-w-5xl items-center justify-center gap-3 text-white/80 transition-all duration-700 delay-150 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          <Music className="h-5 w-5 text-[#1DB954]" />
+          <span className="text-sm font-semibold uppercase tracking-[0.22em]">{t('producer.spotifyLabel')}</span>
+        </div>
+
+        <div
+          className={`mx-auto grid w-full max-w-5xl grid-cols-2 gap-3 transition-all duration-700 delay-200 sm:gap-4 md:gap-5 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           {producerTracks.map((track) => (
-            <div key={track.id} className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <Music className="w-5 h-5 text-[#1DB954]" />
-                <span className="text-white/80 text-sm font-medium tracking-wide">{t('producer.spotifyLabel')}</span>
-              </div>
-              <div className="relative rounded-lg overflow-hidden bg-white/5">
-                <iframe
-                  style={{ borderRadius: '12px' }}
-                  src={toSpotifyEmbed(track.url)}
-                  width="100%"
-                  height="152"
-                  frameBorder="0"
-                  allowFullScreen
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                  title={`ARMAH ${track.title}`}
-                />
-              </div>
+            <div key={track.id} className="relative min-w-0">
+              <a
+                href={track.url}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex min-h-[104px] flex-col justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_16px_36px_rgba(0,0,0,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#1DB954]/45 hover:bg-[#1DB954]/10 hover:shadow-[0_20px_42px_rgba(29,185,84,0.12)] sm:min-h-[112px] sm:p-5"
+              >
+                <div className="min-w-0">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1DB954]/12 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#1DB954]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#1DB954]" />
+                      Spotify
+                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-white/35 transition-colors duration-300 group-hover:text-[#1DB954]" />
+                  </div>
+                  <p className="text-sm font-semibold leading-tight text-white sm:text-base">{track.title}</p>
+                  <p className="mt-1 line-clamp-2 text-xs leading-snug text-white/55 sm:text-sm">{track.artists}</p>
+                </div>
+                <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-white/70 transition-colors duration-300 group-hover:text-white">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-black transition-transform duration-300 group-hover:scale-105">
+                    <Play className="h-3.5 w-3.5 fill-black" />
+                  </span>
+                  <span className="hidden sm:inline">{t('producer.openSpotify')}</span>
+                </div>
+              </a>
             </div>
           ))}
         </div>
 
         {/* Beat Catalog */}
         <div
+          id="beats"
           className={`w-full max-w-6xl mx-auto mt-16 transition-all duration-700 delay-250 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
@@ -504,6 +510,17 @@ export default function Producer() {
             <h3 className="font-head text-3xl md:text-4xl text-white uppercase tracking-tight">{t('beatCatalog.title')}</h3>
             <div className="w-20 h-0.5 bg-armah-purple mt-6 mx-auto" />
             <p className="text-white/60 mt-4 max-w-2xl mx-auto">{t('beatCatalog.subtitle')}</p>
+            <div className="mt-6 mx-auto max-w-3xl rounded-xl border border-armah-red/65 bg-gradient-to-r from-armah-red/20 via-white/[0.055] to-armah-purple/15 px-4 py-4 text-left shadow-[0_0_34px_rgba(251,54,64,0.16)] ring-1 ring-white/10 md:px-5">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-armah-red text-white shadow-[0_0_20px_rgba(251,54,64,0.35)]">
+                  <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.26em] text-armah-red">{t('beatCatalog.demoLabel')}</p>
+                  <p className="mt-1 text-sm leading-6 text-white md:text-base">{t('beatCatalog.demoDisclaimer')}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Genre Carousel */}

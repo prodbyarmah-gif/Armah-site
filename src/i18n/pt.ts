@@ -5,8 +5,10 @@ const pt = {
   // Language label
   langName: "Português",
   nav: {
+    about: "BIO",
     live: "AO VIVO",
     shows: "SHOWS",
+    beats: "BEAT",
     producer: "PRODUTOR",
     booking: "BOOKING",
   },
@@ -29,6 +31,27 @@ const pt = {
     title: "MOMENTOS AO VIVO",
   },
 
+  about: {
+    eyebrow: "BIO",
+    title: "SOBRE ARMAH",
+    short:
+      "Armah é DJ e produtor baseado em Hamburgo, com raízes ganesas, misturando Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB e Dancehall em sets energéticos.",
+    paragraph1:
+      "Armah é DJ e produtor de Hamburgo, com raízes ganesas, e um som que liga Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB e Dancehall.",
+    paragraph2:
+      "O seu estilo é energético, rítmico e focado no público. Em vez de apenas tocar músicas, Armah constrói sets que criam movimento, colocam transições com intenção e leem a energia da sala.",
+    paragraph3:
+      "Com experiência em clubes, ativações de marca e públicos maiores, incluindo Golden Cut, BRICKS Berlin, Edelfettwerk, YOTO Hamburg e eventos Foot Locker, Armah traz um som global com energia real de pista.",
+    paragraph4:
+      "Além do DJing, Armah produz a sua própria música, trabalha em projetos criativos e é cofundador da ZAYA Dreams, um conceito de eventos em Hamburgo focado em cultura, som e comunidade.",
+    facts: {
+      base: "Baseado em Hamburgo",
+      roots: "Raízes ganesas",
+      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      project: "Cofundador da ZAYA Dreams",
+    },
+  },
+
   shows: {
     title: "SHOWS SELECIONADOS",
   },
@@ -38,6 +61,7 @@ const pt = {
     currentCollab: "Colaboração atual",
     currentCollabLabel: "Colaboração atual",
     spotifyLabel: "Spotify",
+    openSpotify: "Abrir no Spotify",
     browseHint: "Explora alguns rascunhos e colaborações.",
     previewSeekHint: "Prévia (clique na forma de onda para avançar)",
     links: {
@@ -50,6 +74,8 @@ const pt = {
   beatCatalog: {
     title: "CATÁLOGO DE BEATS",
     subtitle: "Explora alguns rascunhos e colaborações.",
+    demoLabel: "Nota de demo",
+    demoDisclaimer: "Nota: todas as prévias são demos, não beats finais terminados.",
     previewSeekHint: "Prévia (clique na forma de onda para avançar)",
     licenseInquiry: "Pedido de licença",
     genres: {

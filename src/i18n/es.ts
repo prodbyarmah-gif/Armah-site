@@ -8,8 +8,10 @@ const es = {
   },
 
   nav: {
+    about: "BIO",
     live: "EN VIVO",
     shows: "SHOWS",
+    beats: "BEAT",
     producer: "PRODUCTOR",
     booking: "BOOKING",
   },
@@ -22,6 +24,27 @@ const es = {
   live: {
     title: "MOMENTOS EN VIVO",
     clipLabel: "Clip en vivo",
+  },
+
+  about: {
+    eyebrow: "BIO",
+    title: "SOBRE ARMAH",
+    short:
+      "Armah es un DJ y productor de Hamburgo con raíces ghanesas, mezclando Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB y Dancehall en sets energéticos.",
+    paragraph1:
+      "Armah es DJ y productor de Hamburgo con raíces ghanesas y un sonido que conecta Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB y Dancehall.",
+    paragraph2:
+      "Su estilo es energético, rítmico y enfocado en la crowd. En lugar de solo poner canciones, construye sets que generan movimiento, cuidan las transiciones y leen la energía del lugar.",
+    paragraph3:
+      "Con experiencia en clubes, eventos de marca y públicos más grandes, incluyendo Golden Cut, BRICKS Berlin, Edelfettwerk, YOTO Hamburg y eventos de Foot Locker, Armah trae un sonido global con energía real de club.",
+    paragraph4:
+      "Además de DJ, Armah produce su propia música, trabaja en proyectos creativos y es cofundador de ZAYA Dreams, un concepto de eventos de Hamburgo enfocado en cultura, sonido y comunidad.",
+    facts: {
+      base: "Basado en Hamburgo",
+      roots: "Raíces ghanesas",
+      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      project: "Cofundador de ZAYA Dreams",
+    },
   },
 
   shows: {
@@ -46,11 +69,14 @@ const es = {
     title: "PRODUCTOR",
     currentCollabLabel: "Colaboración actual",
     spotifyLabel: "Spotify",
+    openSpotify: "Abrir en Spotify",
   },
 
   beatCatalog: {
     title: "CATÁLOGO DE BEATS",
     subtitle: "Algunas demos y colaboraciones.",
+    demoLabel: "Nota demo",
+    demoDisclaimer: "Nota: todas las vistas previas son demos, no beats finales terminados.",
     previewSeekHint: "Vista previa (haz clic en la onda para avanzar)",
     licenseInquiry: "Consulta de licencia",
     genres: {

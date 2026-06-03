@@ -8,8 +8,10 @@ const en = {
   },
 
   nav: {
+    about: "BIO",
     live: "LIVE",
     shows: "SHOWS",
+    beats: "BEAT",
     producer: "PRODUCER",
     booking: "BOOKING",
   },
@@ -22,6 +24,27 @@ const en = {
   live: {
     title: "LIVE MOMENTS",
     clipLabel: "Live Clip",
+  },
+
+  about: {
+    eyebrow: "BIO",
+    title: "ABOUT ARMAH",
+    short:
+      "Armah is a Hamburg-based DJ and producer with Ghanaian roots, known for blending Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB and Dancehall into high-energy sets built for real movement.",
+    paragraph1:
+      "Armah is a Hamburg-based DJ and producer with Ghanaian roots, connecting Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB and Dancehall into a sound shaped by rhythm, culture and club energy.",
+    paragraph2:
+      "His sets are energetic, rhythmic and crowd-focused. Instead of simply playing songs, Armah builds moments, reads the room and creates transitions that move people from listening into full participation.",
+    paragraph3:
+      "With experience across clubs, brand events and larger crowds, including Golden Cut, BRICKS Berlin, Edelfettwerk, YOTO Hamburg and Foot Locker events, his sound connects global rhythms with community and raw dancefloor energy.",
+    paragraph4:
+      "Alongside DJing, Armah produces his own music, works on creative projects and is co-founder of ZAYA Dreams, a Hamburg event concept focused on culture, sound and community.",
+    facts: {
+      base: "Hamburg-based",
+      roots: "Ghanaian roots",
+      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      project: "Co-founder of ZAYA Dreams",
+    },
   },
 
   shows: {
@@ -45,11 +68,14 @@ const en = {
     title: "PRODUCER",
     currentCollabLabel: "Current collaboration",
     spotifyLabel: "Spotify",
+    openSpotify: "Open on Spotify",
   },
 
   beatCatalog: {
     title: "BEAT CATALOG",
     subtitle: "Browse a few drafts & collaborations.",
+    demoLabel: "Demo note",
+    demoDisclaimer: "Note: All previews are demo sketches and not final fully produced beats.",
     previewSeekHint: "Preview (click waveform to seek)",
     licenseInquiry: "License inquiry",
     genres: {

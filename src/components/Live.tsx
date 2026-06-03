@@ -1,6 +1,9 @@
 import { useI18n } from "../i18n";
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Play } from 'lucide-react';
+
+const CARD_EASE = [0.22, 1, 0.36, 1] as const;
 
 interface Clip {
   id: string;
@@ -11,6 +14,7 @@ interface Clip {
 
 export default function Live() {
   const { t } = useI18n();
+  const reduce = useReducedMotion();
 
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -132,7 +136,7 @@ export default function Live() {
         {/* Player + Playlist Layout */}
         {/*
             Layout:
-            - Mobile/tablet: player on top, previews below in 2 columns.
+            - Mobile/tablet: player on top, previews below in a horizontal swipe row.
             - Desktop (lg+): player centered, previews in a single row (4 columns) underneath.
           */}
         <div className="flex flex-col items-center gap-6">
@@ -159,44 +163,74 @@ export default function Live() {
             </div>
           </div>
 
-          {/* Preview Cards Grid (2x2) */}
-          <div className="w-full max-w-6xl mx-auto grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {clips.map((clip) => {
-              const isSelected = clip.id === selectedClipId;
-              return (
-                <div
-                  key={clip.id}
-                  className={`relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 lg:aspect-[9/16] ${
-                    isSelected ? 'ring-2 ring-armah-red' : 'hover:ring-1 hover:ring-armah-red/50'
-                  }`}
-                  onClick={() => handlePreviewClick(clip.id)}
-                >
-                  {/* Preview Thumbnail */}
-                  <img
-                    src={clip.posterUrl}
-                    alt={clip.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover object-top pointer-events-none select-none"
-                    draggable={false}
-                  />
+          {/* Preview Cards */}
+          <div className="relative w-full">
+            {!reduce ? (
+              <motion.div
+                className="pointer-events-none absolute -top-3 right-5 z-20 flex items-center gap-1.5 lg:hidden"
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.35, 1, 0.35], x: [0, 12, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <span className="h-1 w-8 rounded-full bg-white/35" />
+                <span className="h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-armah-red" />
+              </motion.div>
+            ) : null}
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-10 pointer-events-none" />
+            <motion.div
+              className="-mx-6 flex w-[calc(100%+3rem)] snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2 pt-3 scrollbar-hide sm:-mx-8 sm:w-[calc(100%+4rem)] sm:px-8 lg:mx-auto lg:grid lg:w-full lg:max-w-6xl lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0 lg:pt-0"
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
+            >
+              {clips.map((clip) => {
+                const isSelected = clip.id === selectedClipId;
+                return (
+                  <motion.div
+                    key={clip.id}
+                    variants={
+                      reduce
+                        ? { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.5 } } }
+                        : {
+                            hidden: { opacity: 0, y: 20 },
+                            show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: CARD_EASE } },
+                          }
+                    }
+                    whileHover={reduce ? undefined : { y: -4 }}
+                    className={`relative aspect-[9/16] w-[68vw] max-w-[280px] flex-none snap-start overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 sm:w-[42vw] lg:w-auto lg:max-w-none lg:aspect-[9/16] ${
+                      isSelected ? 'ring-2 ring-armah-red' : 'hover:ring-1 hover:ring-armah-red/50'
+                    }`}
+                    onClick={() => handlePreviewClick(clip.id)}
+                  >
+                    {/* Preview Thumbnail */}
+                    <img
+                      src={clip.posterUrl}
+                      alt={clip.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover object-top pointer-events-none select-none"
+                      draggable={false}
+                    />
 
-                  {/* Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                    <div className="w-12 h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
-                      <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300 z-10 pointer-events-none" />
+
+                    {/* Play Button */}
+                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                      <div className="w-12 h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+                        <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Title */}
-                  <div className="absolute bottom-3 left-3 right-3 z-30 pointer-events-none">
-                    <p className="text-white/80 text-xs font-medium tracking-wide truncate">{clip.title}</p>
-                  </div>
-                </div>
-              );
-            })}
+                    {/* Title */}
+                    <div className="absolute bottom-3 left-3 right-3 z-30 pointer-events-none">
+                      <p className="text-white/80 text-xs font-medium tracking-wide truncate">{clip.title}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
           </div>
         </div>
       </div>

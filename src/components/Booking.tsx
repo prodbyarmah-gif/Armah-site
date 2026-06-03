@@ -218,27 +218,28 @@ export default function Booking() {
           </p>
           </div>
 
-          {/* Rider Buttons */}
-          <div className={`flex flex-wrap justify-center gap-4 mb-12 transition-all duration-700 delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <a
-              href="/assets/TECHNICAL%20RIDER%20.pdf"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
-            >
-              <FileText className="w-4 h-4" />
-              <span className="text-sm tracking-wide">{t('booking.technicalRider')}</span>
-            </a>
-            <a
-              href="/assets/HOSPITALITY%20RIDER.pdf"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
-            >
-              <FileText className="w-4 h-4" />
-              <span className="text-sm tracking-wide">{t('booking.hospitalityRider')}</span>
-            </a>
-          </div>
+          {isDj ? (
+            <div className={`flex flex-wrap justify-center gap-4 mb-12 transition-all duration-700 delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <a
+                href="/assets/TECHNICAL%20RIDER%20.pdf"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-sm tracking-wide">{t('booking.technicalRider')}</span>
+              </a>
+              <a
+                href="/assets/HOSPITALITY%20RIDER.pdf"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-sm tracking-wide">{t('booking.hospitalityRider')}</span>
+              </a>
+            </div>
+          ) : null}
 
           {/* Contact Form */}
           <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -438,7 +439,7 @@ export default function Booking() {
                 <button
                   type="submit"
                   disabled={isSending}
-                  className={`w-full bg-armah-red hover:bg-[#ff4d56] text-white font-head px-8 py-4 text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:shadow-[0_0_25px_rgba(251,54,64,0.5)] flex items-center justify-center gap-3 ${isSending ? 'opacity-70 cursor-not-allowed hover:shadow-none' : ''}`}
+                  className={`w-full rounded-2xl border border-white/10 bg-[#B91C1C] px-8 py-4 font-head text-sm uppercase tracking-[0.15em] text-white shadow-[0_18px_45px_rgba(185,28,28,0.18)] transition-all duration-300 hover:bg-[#D72632] hover:shadow-[0_0_28px_rgba(185,28,28,0.45)] flex items-center justify-center gap-3 ${isSending ? 'opacity-70 cursor-not-allowed hover:shadow-none' : ''}`}
                 >
                   <span>{isSending ? t('booking.sending') : t('booking.send')}</span>
                   <Send className="w-4 h-4" />

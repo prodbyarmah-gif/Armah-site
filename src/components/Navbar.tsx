@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import LanguageToggle from './LanguageToggle'
 
-type NavLinkKey = 'live' | 'shows' | 'producer' | 'booking'
+type NavLinkKey = 'about' | 'live' | 'shows' | 'beats' | 'producer' | 'booking'
 
 type NavLink = { key: NavLinkKey; href: string }
 
@@ -13,8 +13,10 @@ export default function Navbar(): JSX.Element {
   const { t } = useI18n()
 
   const links: NavLink[] = [
+    { key: 'about', href: '#about' },
     { key: 'live', href: '#live' },
     { key: 'shows', href: '#shows' },
+    { key: 'beats', href: '#beats' },
     { key: 'producer', href: '#producer' },
     { key: 'booking', href: '#booking' },
   ]
