@@ -198,7 +198,7 @@ function buildRawMessage(params: {
   subject: string;
   html: string;
 }): string {
-  const lines = [
+  const headers = [
     `From: ${formatAddress(params.fromEmail, params.fromName)}`,
     `To: ${params.to.join(', ')}`,
     params.replyTo ? `Reply-To: ${formatAddress(params.replyTo.email, params.replyTo.name)}` : undefined,
@@ -206,11 +206,11 @@ function buildRawMessage(params: {
     'Content-Type: text/html; charset=UTF-8',
     'Content-Transfer-Encoding: 8bit',
     `Subject: ${encodeMimeSubject(params.subject)}`,
-    '',
-    params.html,
   ].filter((value): value is string => Boolean(value));
 
-  return Buffer.from(lines.join('\r\n')).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const message = `${headers.join('\r\n')}\r\n\r\n${params.html}`;
+
+  return Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
 async function getGmailAccessToken(): Promise<string> {
@@ -272,19 +272,38 @@ async function sendGmailEmail(params: {
 const EMAIL_LOGO_URL = 'https://prodbyarmah.com/branding/armah-email-logo.jpg';
 const EMAIL_FONT = 'Arial, Helvetica, sans-serif';
 
+// Dark-mode lock: mail apps (esp. Gmail iOS/Android) force-invert colors in dark mode.
+// "background-image: linear-gradient(x,x)" keeps backgrounds from being inverted and
+// "-webkit-text-fill-color" keeps text colors stable; the meta tags cover Apple Mail.
+function lockBg(hex: string): string {
+  return `background:${hex}; background-image:linear-gradient(${hex},${hex});`;
+}
+
+function lockText(hex: string): string {
+  return `color:${hex}; -webkit-text-fill-color:${hex};`;
+}
+
 function buildEmailShell(bodyHtml: string): string {
   return `
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f2; padding:32px 16px; font-family:${EMAIL_FONT};">
+  <!DOCTYPE html>
+  <html lang="en" style="color-scheme: light only; supported-color-schemes: light only;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light only" />
+  </head>
+  <body style="margin:0; padding:0; ${lockBg('#f4f4f2')}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${lockBg('#f4f4f2')} padding:32px 16px; font-family:${EMAIL_FONT};">
     <tr>
       <td align="center">
-        <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px; width:100%; background:#ffffff;">
+        <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px; width:100%; ${lockBg('#ffffff')}">
           <tr>
-            <td align="center" style="background:#080808; padding:32px 24px;">
+            <td align="center" style="${lockBg('#080808')} padding:32px 24px;">
               <img src="${EMAIL_LOGO_URL}" width="210" alt="ARMAH" style="display:block; width:210px; max-width:210px; height:auto; border:0;" />
             </td>
           </tr>
           <tr>
-            <td style="background:#C7352C; height:3px; line-height:3px; font-size:0;">&nbsp;</td>
+            <td style="${lockBg('#C7352C')} height:3px; line-height:3px; font-size:0;">&nbsp;</td>
           </tr>
           <tr>
             <td style="padding:40px 40px 24px;">
@@ -293,7 +312,7 @@ function buildEmailShell(bodyHtml: string): string {
           </tr>
           <tr>
             <td style="padding:24px 40px 32px; border-top:1px solid #eeeeee;">
-              <p style="margin:0; font-family:${EMAIL_FONT}; font-size:12px; color:#999999; text-align:center;">
+              <p style="margin:0; font-family:${EMAIL_FONT}; font-size:12px; ${lockText('#999999')} text-align:center;">
                 booking@prodbyarmah.com &middot; prodbyarmah.com
               </p>
             </td>
@@ -301,18 +320,20 @@ function buildEmailShell(bodyHtml: string): string {
         </table>
       </td>
     </tr>
-  </table>`;
+  </table>
+  </body>
+  </html>`;
 }
 
 function buildSummaryTable(rows: Array<[string, string]>): string {
   const tableRows = rows
     .map(
       ([label, value]) =>
-        `<tr><td style="padding:8px 12px; color:#888888; font-size:13px; width:140px; vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px; color:#111111; font-size:13px;">${escapeHtml(value)}</td></tr>`
+        `<tr><td style="padding:8px 12px; ${lockText('#888888')} font-size:13px; width:140px; vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px; ${lockText('#111111')} font-size:13px;">${escapeHtml(value)}</td></tr>`
     )
     .join('');
 
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f6; border-radius:8px; font-family:${EMAIL_FONT};">${tableRows}</table>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${lockBg('#f7f7f6')} border-radius:8px; font-family:${EMAIL_FONT};">${tableRows}</table>`;
 }
 
 function buildEmailHtml(details: {
@@ -343,11 +364,11 @@ function buildEmailHtml(details: {
   if (details.beatTitle) rows.push([copy.fields.beatTitle, details.beatTitle]);
 
   const body = `
-    <p style="margin:0 0 20px; font-family:${EMAIL_FONT}; font-size:15px; color:#111111;">New booking inquiry via prodbyarmah.com</p>
+    <p style="margin:0 0 20px; font-family:${EMAIL_FONT}; font-size:15px; ${lockText('#111111')}">New booking inquiry via prodbyarmah.com</p>
     ${buildSummaryTable(rows)}
     <div style="margin-top:24px;">
-      <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#999999; margin-bottom:8px;">${escapeHtml(copy.messageLabel)}</div>
-      <div style="font-family:${EMAIL_FONT}; font-size:14px; color:#333333; background:#f7f7f6; padding:16px; border-radius:8px; white-space:pre-wrap;">${escapeHtml(details.message)}</div>
+      <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; ${lockText('#999999')} margin-bottom:8px;">${escapeHtml(copy.messageLabel)}</div>
+      <div style="font-family:${EMAIL_FONT}; font-size:14px; ${lockText('#333333')} ${lockBg('#f7f7f6')} padding:16px; border-radius:8px; white-space:pre-wrap;">${escapeHtml(details.message)}</div>
     </div>
   `;
 
@@ -381,19 +402,19 @@ function buildAutoReplyHtml(details: {
   const greeting = copy.greeting.replace('{name}', escapeHtml(details.name));
 
   const body = `
-    <p style="margin:0 0 16px; font-family:${EMAIL_FONT}; font-size:16px; color:#111111;">${greeting}</p>
-    <p style="margin:0 0 12px; font-family:${EMAIL_FONT}; font-size:14px; color:#333333; line-height:1.6;">${escapeHtml(copy.intro)}</p>
-    <p style="margin:0 0 28px; font-family:${EMAIL_FONT}; font-size:14px; color:#333333; line-height:1.6;">${escapeHtml(copy.body)}</p>
+    <p style="margin:0 0 16px; font-family:${EMAIL_FONT}; font-size:16px; ${lockText('#111111')}">${greeting}</p>
+    <p style="margin:0 0 12px; font-family:${EMAIL_FONT}; font-size:14px; ${lockText('#333333')} line-height:1.6;">${escapeHtml(copy.intro)}</p>
+    <p style="margin:0 0 28px; font-family:${EMAIL_FONT}; font-size:14px; ${lockText('#333333')} line-height:1.6;">${escapeHtml(copy.body)}</p>
 
-    <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#999999; margin-bottom:8px;">${escapeHtml(copy.summaryTitle)}</div>
+    <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; ${lockText('#999999')} margin-bottom:8px;">${escapeHtml(copy.summaryTitle)}</div>
     ${buildSummaryTable(rows)}
 
     <div style="margin-top:24px;">
-      <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#999999; margin-bottom:8px;">${escapeHtml(copy.messageLabel)}</div>
-      <div style="font-family:${EMAIL_FONT}; font-size:14px; color:#333333; background:#f7f7f6; padding:16px; border-radius:8px; white-space:pre-wrap;">${escapeHtml(details.message)}</div>
+      <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; ${lockText('#999999')} margin-bottom:8px;">${escapeHtml(copy.messageLabel)}</div>
+      <div style="font-family:${EMAIL_FONT}; font-size:14px; ${lockText('#333333')} ${lockBg('#f7f7f6')} padding:16px; border-radius:8px; white-space:pre-wrap;">${escapeHtml(details.message)}</div>
     </div>
 
-    <p style="margin:32px 0 0; font-family:${EMAIL_FONT}; font-size:14px; color:#111111;">— ARMAH</p>
+    <p style="margin:32px 0 0; font-family:${EMAIL_FONT}; font-size:14px; ${lockText('#111111')}">— ARMAH</p>
   `;
 
   return buildEmailShell(body);
