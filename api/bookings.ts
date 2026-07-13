@@ -18,6 +18,138 @@ type BookingPayload = {
   beatTitle?: string;
   budget?: string;
   company?: string;
+  language?: string;
+};
+
+type Lang = 'de' | 'en' | 'fr' | 'pt' | 'es';
+const LANGS: readonly Lang[] = ['de', 'en', 'fr', 'pt', 'es'];
+
+function normalizeLanguage(v: unknown): Lang {
+  if (typeof v === 'string' && (LANGS as readonly string[]).includes(v)) {
+    return v as Lang;
+  }
+  return 'en';
+}
+
+type EmailCopy = {
+  subject: string;
+  greeting: string;
+  intro: string;
+  body: string;
+  summaryTitle: string;
+  messageLabel: string;
+  fields: {
+    name: string;
+    email: string;
+    inquiryType: string;
+    eventType: string;
+    location: string;
+    budget: string;
+    beatId: string;
+    beatTitle: string;
+  };
+  inquiryTypeLabels: {
+    dj: string;
+    producer: string;
+  };
+};
+
+const TRANSLATIONS: Record<Lang, EmailCopy> = {
+  de: {
+    subject: 'Deine Booking-Anfrage ist eingegangen — ARMAH',
+    greeting: 'Hallo {name},',
+    intro: 'vielen Dank für deine Anfrage. Wir haben sie erhalten und prüfen jetzt die Details.',
+    body: 'Wir melden uns so schnell wie möglich bei dir zurück.',
+    summaryTitle: 'Deine Anfrage',
+    messageLabel: 'Deine Nachricht',
+    fields: {
+      name: 'Name',
+      email: 'E-Mail',
+      inquiryType: 'Anfrage-Typ',
+      eventType: 'Event-Typ',
+      location: 'Ort',
+      budget: 'Budget',
+      beatId: 'Beat-ID',
+      beatTitle: 'Beat-Titel',
+    },
+    inquiryTypeLabels: { dj: 'DJ-Booking', producer: 'Producer / Beat-Lizenz' },
+  },
+  en: {
+    subject: 'Your booking inquiry has been received — ARMAH',
+    greeting: 'Hi {name},',
+    intro: 'Thank you for your inquiry. We have received it and are now reviewing the details.',
+    body: 'We will get back to you as soon as possible.',
+    summaryTitle: 'Your inquiry',
+    messageLabel: 'Your message',
+    fields: {
+      name: 'Name',
+      email: 'Email',
+      inquiryType: 'Inquiry type',
+      eventType: 'Event type',
+      location: 'Location',
+      budget: 'Budget',
+      beatId: 'Beat ID',
+      beatTitle: 'Beat title',
+    },
+    inquiryTypeLabels: { dj: 'DJ Booking', producer: 'Producer / Beat Licensing' },
+  },
+  fr: {
+    subject: 'Votre demande de booking a bien été reçue — ARMAH',
+    greeting: 'Bonjour {name},',
+    intro: 'Merci pour votre demande. Nous l’avons bien reçue et examinons maintenant les détails.',
+    body: 'Nous vous répondrons dès que possible.',
+    summaryTitle: 'Votre demande',
+    messageLabel: 'Votre message',
+    fields: {
+      name: 'Nom',
+      email: 'E-mail',
+      inquiryType: 'Type de demande',
+      eventType: "Type d'événement",
+      location: 'Lieu',
+      budget: 'Budget',
+      beatId: 'ID du beat',
+      beatTitle: 'Titre du beat',
+    },
+    inquiryTypeLabels: { dj: 'Booking DJ', producer: 'Producer / Licence de beat' },
+  },
+  pt: {
+    subject: 'O seu pedido de booking foi recebido — ARMAH',
+    greeting: 'Olá {name},',
+    intro: 'Obrigado pelo seu pedido. Recebemo-lo e estamos agora a analisar os detalhes.',
+    body: 'Entraremos em contacto consigo o mais breve possível.',
+    summaryTitle: 'O seu pedido',
+    messageLabel: 'A sua mensagem',
+    fields: {
+      name: 'Nome',
+      email: 'E-mail',
+      inquiryType: 'Tipo de pedido',
+      eventType: 'Tipo de evento',
+      location: 'Localização',
+      budget: 'Orçamento',
+      beatId: 'ID do beat',
+      beatTitle: 'Título do beat',
+    },
+    inquiryTypeLabels: { dj: 'Booking de DJ', producer: 'Producer / Licenciamento de beat' },
+  },
+  es: {
+    subject: 'Hemos recibido tu solicitud de booking — ARMAH',
+    greeting: 'Hola {name},',
+    intro: 'Gracias por tu solicitud. La hemos recibido y estamos revisando los detalles.',
+    body: 'Nos pondremos en contacto contigo lo antes posible.',
+    summaryTitle: 'Tu solicitud',
+    messageLabel: 'Tu mensaje',
+    fields: {
+      name: 'Nombre',
+      email: 'Correo electrónico',
+      inquiryType: 'Tipo de solicitud',
+      eventType: 'Tipo de evento',
+      location: 'Ubicación',
+      budget: 'Presupuesto',
+      beatId: 'ID del beat',
+      beatTitle: 'Título del beat',
+    },
+    inquiryTypeLabels: { dj: 'Booking de DJ', producer: 'Producer / Licencia de beat' },
+  },
 };
 
 function isEmail(v: unknown): v is string {
@@ -52,6 +184,12 @@ function formatAddress(email: string, name?: string): string {
   return `"${displayName.replace(/"/g, '')}" <${email}>`;
 }
 
+function encodeMimeSubject(subject: string): string {
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x00-\x7F]*$/.test(subject)) return subject;
+  return `=?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=`;
+}
+
 function buildRawMessage(params: {
   fromEmail: string;
   fromName: string;
@@ -66,8 +204,8 @@ function buildRawMessage(params: {
     params.replyTo ? `Reply-To: ${formatAddress(params.replyTo.email, params.replyTo.name)}` : undefined,
     'MIME-Version: 1.0',
     'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: 7bit',
-    `Subject: ${params.subject}`,
+    'Content-Transfer-Encoding: 8bit',
+    `Subject: ${encodeMimeSubject(params.subject)}`,
     '',
     params.html,
   ].filter((value): value is string => Boolean(value));
@@ -131,6 +269,52 @@ async function sendGmailEmail(params: {
   }
 }
 
+const EMAIL_LOGO_URL = 'https://prodbyarmah.com/branding/armah-email-logo.jpg';
+const EMAIL_FONT = 'Arial, Helvetica, sans-serif';
+
+function buildEmailShell(bodyHtml: string): string {
+  return `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f2; padding:32px 16px; font-family:${EMAIL_FONT};">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px; width:100%; background:#ffffff;">
+          <tr>
+            <td align="center" style="background:#080808; padding:32px 24px;">
+              <img src="${EMAIL_LOGO_URL}" width="210" alt="ARMAH" style="display:block; width:210px; max-width:210px; height:auto; border:0;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#C7352C; height:3px; line-height:3px; font-size:0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="padding:40px 40px 24px;">
+              ${bodyHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 32px; border-top:1px solid #eeeeee;">
+              <p style="margin:0; font-family:${EMAIL_FONT}; font-size:12px; color:#999999; text-align:center;">
+                booking@prodbyarmah.com &middot; prodbyarmah.com
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`;
+}
+
+function buildSummaryTable(rows: Array<[string, string]>): string {
+  const tableRows = rows
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:8px 12px; color:#888888; font-size:13px; width:140px; vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px; color:#111111; font-size:13px;">${escapeHtml(value)}</td></tr>`
+    )
+    .join('');
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f6; border-radius:8px; font-family:${EMAIL_FONT};">${tableRows}</table>`;
+}
+
 function buildEmailHtml(details: {
   name: string;
   email: string;
@@ -141,59 +325,78 @@ function buildEmailHtml(details: {
   budget?: string;
   beatId?: string;
   beatTitle?: string;
+  language: Lang;
 }): string {
-  const rows = [
-    ['Name', details.name],
-    ['Email', details.email],
-    ['Inquiry type', details.inquiryType],
-    ['Event type', details.eventType],
-    ['Location', details.location],
+  const copy = TRANSLATIONS[details.language];
+  const inquiryTypeLabel = copy.inquiryTypeLabels[details.inquiryType === 'producer' ? 'producer' : 'dj'];
+
+  const rows: Array<[string, string]> = [
+    [copy.fields.name, details.name],
+    [copy.fields.email, details.email],
+    [copy.fields.inquiryType, inquiryTypeLabel],
+    [copy.fields.eventType, details.eventType],
+    [copy.fields.location, details.location],
   ];
 
-  if (details.budget) {
-    rows.push(['Budget', details.budget]);
-  }
+  if (details.budget) rows.push([copy.fields.budget, details.budget]);
+  if (details.beatId) rows.push([copy.fields.beatId, details.beatId]);
+  if (details.beatTitle) rows.push([copy.fields.beatTitle, details.beatTitle]);
 
-  if (details.beatId) {
-    rows.push(['Beat ID', details.beatId]);
-  }
-
-  if (details.beatTitle) {
-    rows.push(['Beat title', details.beatTitle]);
-  }
-
-  const tableRows = rows.map(([label, value]) => `<tr><td style="padding:6px 0; color:#666; width:140px;">${escapeHtml(label)}</td><td style="padding:6px 0;">${escapeHtml(value)}</td></tr>`).join('');
-
-  return `
-  <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.4;">
-    <h2 style="margin:0 0 12px;">New Booking Inquiry</h2>
-    <table cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; max-width:640px;">
-      ${tableRows}
-    </table>
-    <div style="margin-top:14px; padding:12px; background:#111; color:#fff; border-radius:8px;">
-      <div style="color:#aaa; font-size:12px; margin-bottom:8px;">Message</div>
-      <div style="white-space:pre-wrap;">${escapeHtml(details.message)}</div>
-    </div>
-  </div>`;
-}
-
-function buildAutoReplyHtml(name: string, message: string, senderName: string): string {
-  const safeName = escapeHtml(name);
-  const safeMessage = escapeHtml(message);
-  const safeSender = escapeHtml(senderName);
-
-  return `
-    <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;">
-      <p style="margin:0 0 10px;">Hey ${safeName},</p>
-      <p style="margin:0 0 10px;">Thanks for reaching out — I received your booking inquiry.</p>
-      <p style="margin:0 0 10px;">My name is <strong>Armah</strong>, and my manager is already informed. We’ll get back to you as soon as possible.</p>
-      <p style="margin:0 0 14px; color:#666; font-size:13px;">(This is an automatic confirmation.)</p>
-      <hr style="border:none;border-top:1px solid #e5e5e5;margin:14px 0;" />
-      <p style="margin:0 0 6px; color:#666; font-size:13px;">Your message:</p>
-      <div style="white-space:pre-wrap; background:#111; color:#fff; padding:10px 12px; border-radius:8px;">${safeMessage}</div>
-      <p style="margin:14px 0 0;">— ${safeSender}</p>
+  const body = `
+    <p style="margin:0 0 20px; font-family:${EMAIL_FONT}; font-size:15px; color:#111111;">New booking inquiry via prodbyarmah.com</p>
+    ${buildSummaryTable(rows)}
+    <div style="margin-top:24px;">
+      <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#999999; margin-bottom:8px;">${escapeHtml(copy.messageLabel)}</div>
+      <div style="font-family:${EMAIL_FONT}; font-size:14px; color:#333333; background:#f7f7f6; padding:16px; border-radius:8px; white-space:pre-wrap;">${escapeHtml(details.message)}</div>
     </div>
   `;
+
+  return buildEmailShell(body);
+}
+
+function buildAutoReplyHtml(details: {
+  name: string;
+  message: string;
+  inquiryType: string;
+  eventType: string;
+  location: string;
+  budget?: string;
+  beatId?: string;
+  beatTitle?: string;
+  language: Lang;
+}): string {
+  const copy = TRANSLATIONS[details.language];
+  const inquiryTypeLabel = copy.inquiryTypeLabels[details.inquiryType === 'producer' ? 'producer' : 'dj'];
+
+  const rows: Array<[string, string]> = [
+    [copy.fields.inquiryType, inquiryTypeLabel],
+    [copy.fields.eventType, details.eventType],
+    [copy.fields.location, details.location],
+  ];
+
+  if (details.budget) rows.push([copy.fields.budget, details.budget]);
+  if (details.beatId) rows.push([copy.fields.beatId, details.beatId]);
+  if (details.beatTitle) rows.push([copy.fields.beatTitle, details.beatTitle]);
+
+  const greeting = copy.greeting.replace('{name}', escapeHtml(details.name));
+
+  const body = `
+    <p style="margin:0 0 16px; font-family:${EMAIL_FONT}; font-size:16px; color:#111111;">${greeting}</p>
+    <p style="margin:0 0 12px; font-family:${EMAIL_FONT}; font-size:14px; color:#333333; line-height:1.6;">${escapeHtml(copy.intro)}</p>
+    <p style="margin:0 0 28px; font-family:${EMAIL_FONT}; font-size:14px; color:#333333; line-height:1.6;">${escapeHtml(copy.body)}</p>
+
+    <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#999999; margin-bottom:8px;">${escapeHtml(copy.summaryTitle)}</div>
+    ${buildSummaryTable(rows)}
+
+    <div style="margin-top:24px;">
+      <div style="font-family:${EMAIL_FONT}; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#999999; margin-bottom:8px;">${escapeHtml(copy.messageLabel)}</div>
+      <div style="font-family:${EMAIL_FONT}; font-size:14px; color:#333333; background:#f7f7f6; padding:16px; border-radius:8px; white-space:pre-wrap;">${escapeHtml(details.message)}</div>
+    </div>
+
+    <p style="margin:32px 0 0; font-family:${EMAIL_FONT}; font-size:14px; color:#111111;">— ARMAH</p>
+  `;
+
+  return buildEmailShell(body);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -237,6 +440,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const beatId = clean(payload?.beatId, 200);
     const beatTitle = clean(payload?.beatTitle, 200);
     const company = clean(payload?.company, 200);
+    const language = normalizeLanguage(payload?.language);
 
     if (company) {
       return res.status(400).json({ ok: false, error: 'Spam detected' });
@@ -269,6 +473,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       budget: inquiryType === 'dj' ? budget : undefined,
       beatId: inquiryType === 'producer' ? beatId : undefined,
       beatTitle: inquiryType === 'producer' ? beatTitle : undefined,
+      language,
     });
 
     await sendGmailEmail({
@@ -276,18 +481,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fromName,
       to: recipients,
       replyTo: { email, name },
-      subject: `ARMAH Booking Inquiry — ${eventType} (${location})`,
+      subject: `ARMAH Booking — ${eventType} (${location})`,
       html,
     });
 
     try {
-      const autoHtml = buildAutoReplyHtml(name, message, fromName);
+      const autoHtml = buildAutoReplyHtml({
+        name,
+        message,
+        inquiryType: inquiryType || 'dj',
+        eventType,
+        location,
+        budget: inquiryType === 'dj' ? budget : undefined,
+        beatId: inquiryType === 'producer' ? beatId : undefined,
+        beatTitle: inquiryType === 'producer' ? beatTitle : undefined,
+        language,
+      });
       await sendGmailEmail({
         fromEmail,
         fromName,
         to: [email],
         replyTo: { email: bookingTo, name: fromName },
-        subject: 'Booking inquiry received ✅',
+        subject: TRANSLATIONS[language].subject,
         html: autoHtml,
       });
     } catch (e) {

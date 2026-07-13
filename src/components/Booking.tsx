@@ -18,7 +18,7 @@ const BUDGET_LEVELS = [
 type InquiryType = 'dj' | 'producer';
 
 export default function Booking() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -173,6 +173,7 @@ export default function Booking() {
           message: formData.message.trim(),
           ...(inquiryType === 'dj' ? { budget: selectedBudgetLabel } : {}),
           company: formData.company, // honeypot
+          language: lang,
         }),
       });
 
