@@ -1,15 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// --- Config (set these in Vercel Environment Variables) ---
-// BREVO_API_KEY      = your Brevo API v3 key
-// BREVO_LIST_ID      = e.g. "3"
-// BREVO_FROM_EMAIL   = a VERIFIED sender email in Brevo (critical)
-// BREVO_FROM_NAME    = optional, e.g. "ARMAH Website"
-// BOOKING_TO         = where you want inquiries delivered (your Gmail)
-
 // Minimal CORS helper (local dev + prod)
 function setCors(res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'https://prodbyarmah.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
@@ -17,9 +10,14 @@ function setCors(res: VercelResponse) {
 type BookingPayload = {
   name?: string;
   email?: string;
+  inquiryType?: string;
   eventType?: string;
   location?: string;
   message?: string;
+  beatId?: string;
+  beatTitle?: string;
+  budget?: string;
+  company?: string;
 };
 
 function isEmail(v: unknown): v is string {
@@ -38,49 +36,164 @@ function requireEnv(name: string): string {
   return v;
 }
 
-async function brevoRequest<T>(path: string, apiKey: string, init?: RequestInit): Promise<T> {
-  const url = `https://api.brevo.com/v3${path}`;
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  const text = await res.text().catch(() => '');
-  if (!res.ok) {
-    // Never leak apiKey, but do return useful error detail
-    throw new Error(`Brevo API error ${res.status}: ${text || res.statusText}`);
-  }
-
-  return (text ? (JSON.parse(text) as T) : ({} as T));
-}
-
-function buildEmailHtml(p: Required<Pick<BookingPayload, 'name' | 'email' | 'eventType' | 'location' | 'message'>>): string {
-  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
     "'": '&#39;',
-  }[c] as string));
+  }[char] as string));
+}
+
+function formatAddress(email: string, name?: string): string {
+  const displayName = (name || '').trim();
+  if (!displayName) return `<${email}>`;
+  return `"${displayName.replace(/"/g, '')}" <${email}>`;
+}
+
+function buildRawMessage(params: {
+  fromEmail: string;
+  fromName: string;
+  to: string[];
+  replyTo?: { email: string; name?: string };
+  subject: string;
+  html: string;
+}): string {
+  const lines = [
+    `From: ${formatAddress(params.fromEmail, params.fromName)}`,
+    `To: ${params.to.join(', ')}`,
+    params.replyTo ? `Reply-To: ${formatAddress(params.replyTo.email, params.replyTo.name)}` : undefined,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: 7bit',
+    `Subject: ${params.subject}`,
+    '',
+    params.html,
+  ].filter((value): value is string => Boolean(value));
+
+  return Buffer.from(lines.join('\r\n')).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function getGmailAccessToken(): Promise<string> {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error('Email service is not configured');
+  }
+
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    }),
+  });
+
+  const data = await res.json().catch(() => ({} as { access_token?: string }));
+  if (!res.ok || !data.access_token) {
+    throw new Error('Unable to initialize email delivery');
+  }
+
+  return data.access_token;
+}
+
+async function sendGmailEmail(params: {
+  fromEmail: string;
+  fromName: string;
+  to: string[];
+  replyTo?: { email: string; name?: string };
+  subject: string;
+  html: string;
+}): Promise<void> {
+  const accessToken = await getGmailAccessToken();
+  const raw = buildRawMessage(params);
+
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ raw }),
+  });
+
+  const text = await res.text().catch(() => '');
+  if (!res.ok) {
+    throw new Error(`Gmail API error ${res.status}: ${text || res.statusText}`);
+  }
+}
+
+function buildEmailHtml(details: {
+  name: string;
+  email: string;
+  inquiryType: string;
+  eventType: string;
+  location: string;
+  message: string;
+  budget?: string;
+  beatId?: string;
+  beatTitle?: string;
+}): string {
+  const rows = [
+    ['Name', details.name],
+    ['Email', details.email],
+    ['Inquiry type', details.inquiryType],
+    ['Event type', details.eventType],
+    ['Location', details.location],
+  ];
+
+  if (details.budget) {
+    rows.push(['Budget', details.budget]);
+  }
+
+  if (details.beatId) {
+    rows.push(['Beat ID', details.beatId]);
+  }
+
+  if (details.beatTitle) {
+    rows.push(['Beat title', details.beatTitle]);
+  }
+
+  const tableRows = rows.map(([label, value]) => `<tr><td style="padding:6px 0; color:#666; width:140px;">${escapeHtml(label)}</td><td style="padding:6px 0;">${escapeHtml(value)}</td></tr>`).join('');
 
   return `
   <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.4;">
     <h2 style="margin:0 0 12px;">New Booking Inquiry</h2>
     <table cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; max-width:640px;">
-      <tr><td style="padding:6px 0; color:#666; width:140px;">Name</td><td style="padding:6px 0;">${esc(p.name)}</td></tr>
-      <tr><td style="padding:6px 0; color:#666;">Email</td><td style="padding:6px 0;">${esc(p.email)}</td></tr>
-      <tr><td style="padding:6px 0; color:#666;">Event type</td><td style="padding:6px 0;">${esc(p.eventType)}</td></tr>
-      <tr><td style="padding:6px 0; color:#666;">Location</td><td style="padding:6px 0;">${esc(p.location)}</td></tr>
+      ${tableRows}
     </table>
     <div style="margin-top:14px; padding:12px; background:#111; color:#fff; border-radius:8px;">
       <div style="color:#aaa; font-size:12px; margin-bottom:8px;">Message</div>
-      <div style="white-space:pre-wrap;">${esc(p.message)}</div>
+      <div style="white-space:pre-wrap;">${escapeHtml(details.message)}</div>
     </div>
   </div>`;
+}
+
+function buildAutoReplyHtml(name: string, message: string, senderName: string): string {
+  const safeName = escapeHtml(name);
+  const safeMessage = escapeHtml(message);
+  const safeSender = escapeHtml(senderName);
+
+  return `
+    <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;">
+      <p style="margin:0 0 10px;">Hey ${safeName},</p>
+      <p style="margin:0 0 10px;">Thanks for reaching out — I received your booking inquiry.</p>
+      <p style="margin:0 0 10px;">My name is <strong>Armah</strong>, and my manager is already informed. We’ll get back to you as soon as possible.</p>
+      <p style="margin:0 0 14px; color:#666; font-size:13px;">(This is an automatic confirmation.)</p>
+      <hr style="border:none;border-top:1px solid #e5e5e5;margin:14px 0;" />
+      <p style="margin:0 0 6px; color:#666; font-size:13px;">Your message:</p>
+      <div style="white-space:pre-wrap; background:#111; color:#fff; padding:10px 12px; border-radius:8px;">${safeMessage}</div>
+      <p style="margin:14px 0 0;">— ${safeSender}</p>
+    </div>
+  `;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -88,7 +201,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     setCors(res);
 
     if (req.method === 'OPTIONS') {
-      // CORS preflight
       return res.status(204).end();
     }
 
@@ -96,29 +208,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ ok: false, error: 'Method not allowed' });
     }
 
-    const apiKey = requireEnv('BREVO_API_KEY');
-    const listIdRaw = requireEnv('BREVO_LIST_ID');
-    const fromEmail = requireEnv('BREVO_FROM_EMAIL');
-    const fromName = process.env.BREVO_FROM_NAME || 'ARMAH Website';
     const bookingTo = requireEnv('BOOKING_TO');
+    const fromEmail = requireEnv('GOOGLE_FROM_EMAIL');
+    const fromName = process.env.GOOGLE_FROM_NAME || 'ARMAH Website';
     const managerEmail = process.env.MANAGER_EMAIL || '';
-    const managerTo = isEmail(managerEmail) ? [{ email: managerEmail }] : [];
+    const managerRecipients = isEmail(managerEmail) ? [managerEmail] : [];
 
-    const listId = Number(listIdRaw);
-    if (!Number.isFinite(listId) || listId <= 0) {
-      return res.status(500).json({ ok: false, error: 'BREVO_LIST_ID must be a positive number' });
-    }
-
-    // Body parsing (Vercel usually gives object; but be defensive)
     const body: unknown = req.body;
-    const payload: BookingPayload =
-      typeof body === 'string' ? (JSON.parse(body) as BookingPayload) : (body as BookingPayload);
+    let payload: BookingPayload = {};
+
+    if (typeof body === 'string') {
+      try {
+        payload = JSON.parse(body) as BookingPayload;
+      } catch {
+        payload = {};
+      }
+    } else {
+      payload = body as BookingPayload;
+    }
 
     const name = clean(payload?.name, 120);
     const email = clean(payload?.email, 200);
+    const inquiryType = clean(payload?.inquiryType, 40);
     const eventType = clean(payload?.eventType, 120);
     const location = clean(payload?.location, 200);
     const message = clean(payload?.message, 4000);
+    const budget = clean(payload?.budget, 200);
+    const beatId = clean(payload?.beatId, 200);
+    const beatTitle = clean(payload?.beatTitle, 200);
+    const company = clean(payload?.company, 200);
+
+    if (company) {
+      return res.status(400).json({ ok: false, error: 'Spam detected' });
+    }
 
     if (!name || !email || !eventType || !location || !message) {
       return res.status(400).json({
@@ -132,91 +254,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ ok: false, error: 'Invalid email' });
     }
 
-    // 1) Upsert contact into Brevo list (best-effort)
-    try {
-      await brevoRequest('/contacts', apiKey, {
-        method: 'POST',
-        body: JSON.stringify({
-          email,
-          attributes: {
-            FIRSTNAME: name,
-            EVENT_TYPE: eventType,
-            LOCATION: location,
-          },
-          listIds: [listId],
-          updateEnabled: true,
-        }),
-      });
-    } catch (e) {
-      // Don't fail the whole request if contact add fails.
-      // We still want the email to go out.
-      // eslint-disable-next-line no-console
-      console.warn('Brevo contact upsert failed:', e);
+    const recipients = [bookingTo, ...managerRecipients].filter(Boolean);
+    if (!recipients.length) {
+      return res.status(500).json({ ok: false, error: 'Missing booking recipient' });
     }
 
-    // 2) Send transactional email to you
-    const html = buildEmailHtml({ name, email, eventType, location, message });
-
-    await brevoRequest('/smtp/email', apiKey, {
-      method: 'POST',
-      body: JSON.stringify({
-        sender: { email: fromEmail, name: fromName },
-        to: [{ email: bookingTo }, ...managerTo],
-
-        // ✅ Reply-To makes Gmail "Reply" go to the customer automatically
-        replyTo: { email, name: name || 'Booking Inquiry' },
-
-        subject: `ARMAH Booking Inquiry — ${eventType} (${location})`,
-        htmlContent: html,
-      }),
+    const html = buildEmailHtml({
+      name,
+      email,
+      inquiryType: inquiryType || 'dj',
+      eventType,
+      location,
+      message,
+      budget: inquiryType === 'dj' ? budget : undefined,
+      beatId: inquiryType === 'producer' ? beatId : undefined,
+      beatTitle: inquiryType === 'producer' ? beatTitle : undefined,
     });
 
-    // 3) Auto-reply to the customer (short confirmation)
+    await sendGmailEmail({
+      fromEmail,
+      fromName,
+      to: recipients,
+      replyTo: { email, name },
+      subject: `ARMAH Booking Inquiry — ${eventType} (${location})`,
+      html,
+    });
+
     try {
-      const esc = (s: string) =>
-        s.replace(/[&<>"']/g, (c) =>
-          ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-          }[c] as string)
-        );
-
-      const autoSubject = 'Booking inquiry received ✅';
-      const autoHtml = `
-        <div style="font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;">
-          <p style="margin:0 0 10px;">Hey ${esc(name)},</p>
-          <p style="margin:0 0 10px;">Thanks for reaching out — I received your booking inquiry.</p>
-          <p style="margin:0 0 10px;">My name is <strong>Armah</strong>, and my manager is already informed. We’ll get back to you as soon as possible.</p>
-          <p style="margin:0 0 14px; color:#666; font-size:13px;">(This is an automatic confirmation.)</p>
-          <hr style="border:none;border-top:1px solid #e5e5e5;margin:14px 0;" />
-          <p style="margin:0 0 6px; color:#666; font-size:13px;">Your message:</p>
-          <div style="white-space:pre-wrap; background:#111; color:#fff; padding:10px 12px; border-radius:8px;">${esc(message)}</div>
-          <p style="margin:14px 0 0;">— ${esc(fromName)}</p>
-        </div>
-      `;
-
-      await brevoRequest('/smtp/email', apiKey, {
-        method: 'POST',
-        body: JSON.stringify({
-          sender: { email: fromEmail, name: fromName },
-          to: [{ email }],
-          // Reply-to should go to your booking inbox (so customers don't reply to no-reply by accident)
-          replyTo: { email: bookingTo, name: fromName },
-          subject: autoSubject,
-          htmlContent: autoHtml,
-        }),
+      const autoHtml = buildAutoReplyHtml(name, message, fromName);
+      await sendGmailEmail({
+        fromEmail,
+        fromName,
+        to: [email],
+        replyTo: { email: bookingTo, name: fromName },
+        subject: 'Booking inquiry received ✅',
+        html: autoHtml,
       });
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.warn('Brevo auto-reply failed:', e);
+      console.warn('Gmail auto-reply failed:', e);
     }
 
     return res.status(200).json({ ok: true });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return res.status(500).json({ ok: false, error: msg });
+  } catch {
+    return res.status(500).json({ ok: false, error: 'Unable to send booking email right now.' });
   }
 }

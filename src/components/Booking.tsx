@@ -5,6 +5,15 @@ import { beatOptions, type BeatOption } from './Producer';
 
 const DJ_EVENT_TYPES = ['club', 'festival', 'private', 'corporate', 'other'] as const;
 const PRODUCER_TYPES = ['beat_license', 'custom_beat', 'production', 'mix_master', 'collab', 'other'] as const;
+const BUDGET_LEVELS = [
+  { value: 0, label: 'Budget not specified' },
+  { value: 1, label: 'Up to €150' },
+  { value: 2, label: '€150–250' },
+  { value: 3, label: '€250–400' },
+  { value: 4, label: '€400–600' },
+  { value: 5, label: '€600–1,000' },
+  { value: 6, label: '€1,000+' },
+] as const;
 
 type InquiryType = 'dj' | 'producer';
 
@@ -29,6 +38,7 @@ export default function Booking() {
     eventType: '',
     location: '',
     message: '',
+    budgetLevel: 0,
     company: '', // honeypot (bots fill this)
   });
 
@@ -146,18 +156,21 @@ export default function Booking() {
 
     setIsSending(true);
     try {
+      const selectedBudgetLabel = BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.label || 'Budget not specified';
+
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
           inquiryType,
           eventType: formData.eventType,
           beatId: inquiryType === 'producer' && formData.eventType === 'beat_license' ? selectedBeatId : undefined,
           beatTitle: inquiryType === 'producer' && formData.eventType === 'beat_license' ? (selectedBeat?.title || '') : undefined,
-          location: formData.location,
-          message: formData.message,
+          location: formData.location.trim(),
+          message: formData.message.trim(),
+          ...(inquiryType === 'dj' ? { budget: selectedBudgetLabel } : {}),
           company: formData.company, // honeypot
         }),
       });
@@ -174,6 +187,7 @@ export default function Booking() {
         eventType: '',
         location: '',
         message: '',
+        budgetLevel: 0,
         company: '',
       });
       setSelectedBeatId('');
@@ -367,6 +381,35 @@ export default function Booking() {
                     />
                   </div>
                 </div>
+
+                {inquiryType === 'dj' ? (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <label htmlFor="budgetLevel" className="block text-white/70 text-sm">
+                        Planned budget
+                      </label>
+                      <span className="text-sm font-semibold text-armah-red">
+                        {BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.label || 'Budget not specified'}
+                      </span>
+                    </div>
+                    <input
+                      id="budgetLevel"
+                      name="budgetLevel"
+                      type="range"
+                      min="0"
+                      max="6"
+                      step="1"
+                      value={formData.budgetLevel}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, budgetLevel: Number(e.target.value) }))}
+                      className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10"
+                      style={{ accentColor: '#B91C1C' }}
+                    />
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.2em] text-white/35">
+                      <span>Budget not specified</span>
+                      <span>€1,000+</span>
+                    </div>
+                  </div>
+                ) : null}
 
                 {inquiryType === 'producer' && formData.eventType === 'beat_license' ? (
                   <div>
