@@ -161,6 +161,16 @@ const pt = {
       missingFields: "Por favor preenche Nome, Email, Tipo de evento, Local e Mensagem.",
       generic: "Algo correu mal.",
     },
+      budget: {
+        label: "Orçamento previsto",
+        unspecified: "Orçamento não especificado",
+        upTo150: "Até 150 €",
+        range150To250: "150–250 €",
+        range250To400: "250–400 €",
+        range400To600: "400–600 €",
+        range600To1000: "600–1.000 €",
+        over1000: "1.000 €+",
+      },
   },
 
 

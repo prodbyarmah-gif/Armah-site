@@ -156,6 +156,16 @@ const en = {
       missingFields: "Please fill in Name, Email, Event Type, Location, and Message.",
       generic: "Something went wrong.",
     },
+    budget: {
+      label: "Planned budget",
+      unspecified: "Budget not specified",
+      upTo150: "Up to €150",
+      range150To250: "€150–250",
+      range250To400: "€250–400",
+      range400To600: "€400–600",
+      range600To1000: "€600–1,000",
+      over1000: "€1,000+",
+    },
 
     name: "Name",
     email: "Email",

@@ -6,13 +6,13 @@ import { beatOptions, type BeatOption } from './Producer';
 const DJ_EVENT_TYPES = ['club', 'festival', 'private', 'corporate', 'other'] as const;
 const PRODUCER_TYPES = ['beat_license', 'custom_beat', 'production', 'mix_master', 'collab', 'other'] as const;
 const BUDGET_LEVELS = [
-  { value: 0, label: 'Budget not specified' },
-  { value: 1, label: 'Up to €150' },
-  { value: 2, label: '€150–250' },
-  { value: 3, label: '€250–400' },
-  { value: 4, label: '€400–600' },
-  { value: 5, label: '€600–1,000' },
-  { value: 6, label: '€1,000+' },
+  { value: 0, key: 'unspecified' },
+  { value: 1, key: 'upTo150' },
+  { value: 2, key: 'range150To250' },
+  { value: 3, key: 'range250To400' },
+  { value: 4, key: 'range400To600' },
+  { value: 5, key: 'range600To1000' },
+  { value: 6, key: 'over1000' },
 ] as const;
 
 type InquiryType = 'dj' | 'producer';
@@ -156,7 +156,8 @@ export default function Booking() {
 
     setIsSending(true);
     try {
-      const selectedBudgetLabel = BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.label || 'Budget not specified';
+      const selectedBudgetKey = BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.key || 'unspecified';
+      const selectedBudgetLabel = t(`booking.budget.${selectedBudgetKey}`);
 
       const res = await fetch('/api/bookings', {
         method: 'POST',
@@ -386,10 +387,10 @@ export default function Booking() {
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5">
                     <div className="flex items-start justify-between gap-3">
                       <label htmlFor="budgetLevel" className="block text-white/70 text-sm">
-                        Planned budget
+                        {t('booking.budget.label')}
                       </label>
                       <span className="text-sm font-semibold text-armah-red">
-                        {BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.label || 'Budget not specified'}
+                        {t(`booking.budget.${BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.key || 'unspecified'}`)}
                       </span>
                     </div>
                     <input
@@ -405,8 +406,8 @@ export default function Booking() {
                       style={{ accentColor: '#B91C1C' }}
                     />
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.2em] text-white/35">
-                      <span>Budget not specified</span>
-                      <span>€1,000+</span>
+                      <span>{t('booking.budget.unspecified')}</span>
+                      <span>{t('booking.budget.over1000')}</span>
                     </div>
                   </div>
                 ) : null}

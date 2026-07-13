@@ -166,6 +166,17 @@ const de = {
       generic: "Etwas ist schiefgelaufen.",
     },
 
+    budget: {
+      label: "Geplantes Budget",
+      unspecified: "Budget nicht angegeben",
+      upTo150: "Bis 150 €",
+      range150To250: "150–250 €",
+      range250To400: "250–400 €",
+      range400To600: "400–600 €",
+      range600To1000: "600–1.000 €",
+      over1000: "1.000 €+",
+    },
+
     selectType: "Typ wählen",
     yourName: "Dein Name",
     yourEmail: "dein@email.de",
