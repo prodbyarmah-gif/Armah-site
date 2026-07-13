@@ -250,16 +250,28 @@ function getCityMarkerPosition(coords: [number, number], tileView: TileView, map
   };
 }
 
-function WorldMap({ onOpenCountry, reduce }: { onOpenCountry: () => void; reduce: boolean | null }) {
+function WorldMap({
+  onOpenCountry,
+  reduce,
+  mobile,
+}: {
+  onOpenCountry: () => void;
+  reduce: boolean | null;
+  mobile: boolean;
+}) {
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
 
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#050505] shadow-[0_18px_80px_rgba(0,0,0,0.45)]">
       <ComposableMap
         projection="geoMercator"
-        projectionConfig={{ scale: TOUR_REGION_SCALE, center: TOUR_REGION_CENTER }}
-        width={760}
-        height={460}
+        projectionConfig={
+          mobile
+            ? { scale: 420, center: [6, 48] }
+            : { scale: TOUR_REGION_SCALE, center: TOUR_REGION_CENTER }
+        }
+        width={mobile ? 375 : 760}
+        height={mobile ? 400 : 460}
         style={{ width: '100%', height: 'auto' }}
       >
         <Geographies geography={WORLD_GEO}>
@@ -494,6 +506,15 @@ function CityTileMap({
 export default function Trusted(): JSX.Element {
   const { t } = useI18n();
   const reduce = useReducedMotion();
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   // ----- Logo carousel -----
   const [index, setIndex] = useState(0);
@@ -746,7 +767,7 @@ export default function Trusted(): JSX.Element {
   const z = view.zoom;
 
   return (
-    <section id="shows" className="relative w-full bg-black py-24 md:py-32">
+    <section id="shows" className="relative w-full bg-black py-16 md:py-32">
       <div className="w-full px-6 lg:px-12 xl:px-24">
         {/* Title */}
         <Reveal className="text-center mb-4">
@@ -762,7 +783,7 @@ export default function Trusted(): JSX.Element {
         </Reveal>
 
         {/* Logo carousel */}
-        <div className="max-w-4xl mx-auto mb-16 relative">
+        <div className="max-w-4xl mx-auto mb-10 md:mb-16 relative">
           <div
             className="w-full h-28 flex items-center justify-center overflow-hidden relative"
             onTouchStart={onTouchStart}
@@ -783,14 +804,14 @@ export default function Trusted(): JSX.Element {
             <button
               aria-label={t('trusted.prev')}
               onClick={prev}
-              className="absolute top-1/2 -translate-y-1/2 left-10 md:left-14 z-50 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
+              className="absolute top-1/2 -translate-y-1/2 left-0 md:left-14 z-50 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
             >
               ‹
             </button>
             <button
               aria-label={t('trusted.next')}
               onClick={next}
-              className="absolute top-1/2 -translate-y-1/2 right-10 md:right-14 z-50 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
+              className="absolute top-1/2 -translate-y-1/2 right-0 md:right-14 z-50 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
             >
               ›
             </button>
@@ -820,7 +841,7 @@ export default function Trusted(): JSX.Element {
                   style={{ transformOrigin: '52% 42%' }}
                 >
                   <div className="w-full">
-                    <WorldMap onOpenCountry={openCountry} reduce={reduce} />
+                    <WorldMap onOpenCountry={openCountry} reduce={reduce} mobile={isMobile} />
                   </div>
                 </motion.div>
               ) : mapLevel === 'city' && activeStop ? (

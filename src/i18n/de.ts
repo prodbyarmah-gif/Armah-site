@@ -20,6 +20,7 @@ const de = {
   },
 
   live: {
+    tapHint: "Antippen, um das Video zu wechseln",
     title: "LIVE MOMENTS",
     clipLabel: "Live Clip",
   },

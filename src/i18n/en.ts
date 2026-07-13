@@ -22,6 +22,7 @@ const en = {
   },
 
   live: {
+    tapHint: "Tap to switch videos",
     title: "LIVE MOMENTS",
     clipLabel: "Live Clip",
   },

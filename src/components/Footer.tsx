@@ -25,9 +25,9 @@ export default function Footer() {
             {/* Brand */}
             <div className="text-center md:text-left">
               <img
-                src="/assets/ARMAH_logo_transparent_white.png"
+                src="/assets/ARMAH_logo_trimmed.png"
                 alt="ARMAH"
-                className="h-8 w-auto mx-auto md:mx-0 mb-4 object-contain"
+                className="h-10 w-auto mx-auto md:mx-0 mb-4 object-contain"
               />
               <p className="text-white/50 text-sm tracking-wide">
                {t("footer.tagline")}

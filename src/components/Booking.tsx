@@ -220,12 +220,12 @@ export default function Booking() {
           <div className={`text-center mb-12 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <a
               href="mailto:booking@prodbyarmah.com"
-              className="inline-flex items-center gap-4 text-white hover:text-armah-red transition-colors duration-200 group"
+              className="inline-flex items-center gap-3 sm:gap-4 text-white hover:text-armah-red transition-colors duration-200 group"
             >
-              <div className="w-12 h-12 rounded-full bg-armah-red/10 flex items-center justify-center group-hover:bg-armah-red/20 transition-colors duration-200">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-armah-red/10 flex items-center justify-center group-hover:bg-armah-red/20 transition-colors duration-200 flex-shrink-0">
                 <Mail className="w-5 h-5 text-armah-red" />
               </div>
-              <span className="text-xl md:text-2xl font-medium tracking-wide">
+              <span className="text-base sm:text-xl md:text-2xl font-medium tracking-wide">
                 booking@prodbyarmah.com
               </span>
             </a>
@@ -386,11 +386,11 @@ export default function Booking() {
 
                 {inquiryType === 'dj' ? (
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <label htmlFor="budgetLevel" className="block text-white/70 text-sm">
                         {t('booking.budget.label')}
                       </label>
-                      <span className="text-sm font-semibold text-armah-red">
+                      <span className="text-sm font-semibold text-armah-red sm:text-right">
                         {t(`booking.budget.${BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.key || 'unspecified'}`)}
                       </span>
                     </div>

@@ -119,7 +119,7 @@ export default function Live() {
   };
 
   return (
-    <section id="live" ref={sectionRef} className="relative w-full bg-black py-24 md:py-32">
+    <section id="live" ref={sectionRef} className="relative w-full bg-black py-16 md:py-32">
       <div className="w-full px-6 lg:px-12 xl:px-24">
         {/* Section Title */}
         <div
@@ -136,8 +136,8 @@ export default function Live() {
         {/* Player + Playlist Layout */}
         {/*
             Layout:
-            - Mobile/tablet: player on top, previews below in a horizontal swipe row.
-            - Desktop (lg+): player centered, previews in a single row (4 columns) underneath.
+            - Player on top, all previews below as a 4-column tap-to-select grid
+              (small thumbnails on mobile, large cards on lg+).
           */}
         <div className="flex flex-col items-center gap-6">
           {/* Main Player */}
@@ -163,23 +163,14 @@ export default function Live() {
             </div>
           </div>
 
-          {/* Preview Cards */}
+          {/* Preview Cards — all clips visible as tappable thumbnails (no swiping needed) */}
           <div className="relative w-full">
-            {!reduce ? (
-              <motion.div
-                className="pointer-events-none absolute -top-3 right-5 z-20 flex items-center gap-1.5 lg:hidden"
-                aria-hidden="true"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0.35, 1, 0.35], x: [0, 12, 0] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <span className="h-1 w-8 rounded-full bg-white/35" />
-                <span className="h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-armah-red" />
-              </motion.div>
-            ) : null}
+            <p className="mb-3 text-center text-xs tracking-wide text-white/40 lg:hidden">
+              {t('live.tapHint')}
+            </p>
 
             <motion.div
-              className="-mx-6 flex w-[calc(100%+3rem)] snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2 pt-3 scrollbar-hide sm:-mx-8 sm:w-[calc(100%+4rem)] sm:px-8 lg:mx-auto lg:grid lg:w-full lg:max-w-6xl lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0 lg:pt-0"
+              className="mx-auto grid w-full max-w-xl grid-cols-4 gap-2 sm:gap-3 lg:max-w-6xl lg:gap-4"
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, amount: 0.3 }}
@@ -199,7 +190,7 @@ export default function Live() {
                           }
                     }
                     whileHover={reduce ? undefined : { y: -4 }}
-                    className={`relative aspect-[9/16] w-[68vw] max-w-[280px] flex-none snap-start overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 sm:w-[42vw] lg:w-auto lg:max-w-none lg:aspect-[9/16] ${
+                    className={`relative aspect-[9/16] overflow-hidden bg-black cursor-pointer group rounded-lg transition-all duration-200 ${
                       isSelected ? 'ring-2 ring-armah-red' : 'hover:ring-1 hover:ring-armah-red/50'
                     }`}
                     onClick={() => handlePreviewClick(clip.id)}
@@ -218,14 +209,14 @@ export default function Live() {
 
                     {/* Play Button */}
                     <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                      <div className="w-12 h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
-                        <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                      <div className="w-8 h-8 lg:w-12 lg:h-12 rounded-full bg-armah-red/90 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-armah-red">
+                        <Play className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-white ml-0.5" fill="white" />
                       </div>
                     </div>
 
                     {/* Title */}
-                    <div className="absolute bottom-3 left-3 right-3 z-30 pointer-events-none">
-                      <p className="text-white/80 text-xs font-medium tracking-wide truncate">{clip.title}</p>
+                    <div className="absolute bottom-2 left-2 right-2 lg:bottom-3 lg:left-3 lg:right-3 z-30 pointer-events-none">
+                      <p className="text-white/80 text-[10px] lg:text-xs font-medium tracking-wide truncate">{clip.title}</p>
                     </div>
                   </motion.div>
                 );

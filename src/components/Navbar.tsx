@@ -10,6 +10,7 @@ export default function Navbar(): JSX.Element {
   const [open, setOpen] = useState(false)
   const [isAtTop, setIsAtTop] = useState(true)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const toggleRef = useRef<HTMLButtonElement | null>(null)
   const { t } = useI18n()
 
   const links: NavLink[] = [
@@ -36,7 +37,12 @@ export default function Navbar(): JSX.Element {
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
       const target = e.target as Node
-      if (open && menuRef.current && !menuRef.current.contains(target)) {
+      if (
+        open &&
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        !(toggleRef.current && toggleRef.current.contains(target))
+      ) {
         setOpen(false)
       }
     }
@@ -70,7 +76,7 @@ export default function Navbar(): JSX.Element {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-out pointer-events-auto backdrop-blur-none border-transparent ${
-        isAtTop ? 'bg-gradient-to-b from-black/35 via-black/15 to-transparent' : 'bg-transparent'
+        open ? 'bg-black' : isAtTop ? 'bg-gradient-to-b from-black/35 via-black/15 to-transparent' : 'bg-transparent'
       }`}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
@@ -117,6 +123,7 @@ export default function Navbar(): JSX.Element {
 
           <div className="md:hidden absolute right-4 top-1/2 -translate-y-1/2">
             <button
+              ref={toggleRef}
               onClick={() => setOpen((s) => !s)}
               aria-label="Toggle menu"
               aria-expanded={open}
@@ -136,8 +143,8 @@ export default function Navbar(): JSX.Element {
 
       {/* Mobile panel */}
       {open && (
-        <div ref={menuRef} className="md:hidden bg-black/80 border-t border-white/10 backdrop-blur-sm">
-          <div className="px-4 pt-2 pb-4 space-y-2">
+        <div ref={menuRef} className="md:hidden bg-black border-t border-white/10">
+          <div className="px-4 pt-2 pb-4 space-y-1">
             <div className="pb-2">
               <LanguageToggle />
             </div>
@@ -146,7 +153,7 @@ export default function Navbar(): JSX.Element {
                 key={l.href + '-mobile'}
                 href={l.href}
                 onClick={handleLinkClick}
-                className="block text-white text-base font-head tracking-wide"
+                className="block text-white text-base font-head tracking-wide py-2"
               >
                 {t(`nav.${l.key}`)}
               </a>

@@ -28,6 +28,7 @@ const fr = {
   },
 
   live: {
+    tapHint: "Touchez pour changer de vidéo",
     title: "MOMENTS LIVE",
     clipLabel: "Clip live",
   },

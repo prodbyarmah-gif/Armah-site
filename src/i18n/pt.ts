@@ -28,6 +28,7 @@ const pt = {
 
   // New structured keys (preferred by components)
   live: {
+    tapHint: "Toque para mudar de vídeo",
     title: "MOMENTOS AO VIVO",
   },
 
