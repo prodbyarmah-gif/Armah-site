@@ -8,8 +8,8 @@ export default function Instagram() {
   const [isVisible, setIsVisible] = useState(false);
 
   // Provided YouTube video
-  const youtubeUrl = 'https://youtu.be/b02dn3XbjHs?si=aGXVz33VqLa6C1ev';
-  const youtubeEmbedUrl = 'https://www.youtube-nocookie.com/embed/b02dn3XbjHs?rel=0&modestbranding=1';
+  const youtubeUrl = 'https://youtu.be/Wa7tW_tpVr8';
+  const youtubeEmbedUrl = 'https://www.youtube-nocookie.com/embed/Wa7tW_tpVr8?rel=0&modestbranding=1';
 
   useEffect(() => {
     const observer = new IntersectionObserver(

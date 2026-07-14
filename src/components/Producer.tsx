@@ -14,6 +14,12 @@ type ProducerTrack = { id: string; title: string; artists: string; url: string }
 
 const producerTracks: ProducerTrack[] = [
   {
+    id: 'T005',
+    title: 'German Borga',
+    artists: 'Stephen Jounior',
+    url: 'https://open.spotify.com/intl-de/track/1h3huetUjM2E6ccNs84rF3?si=1c4df676167f4aca',
+  },
+  {
     id: 'T001',
     title: 'Comeback Season',
     artists: 'Stephen Jounior',
@@ -469,8 +475,13 @@ export default function Producer() {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          {producerTracks.map((track) => (
-            <div key={track.id} className="relative min-w-0">
+          {producerTracks.map((track, index) => (
+            <div
+              key={track.id}
+              className={`relative min-w-0 ${
+                producerTracks.length % 2 === 1 && index === producerTracks.length - 1 ? 'col-span-2' : ''
+              }`}
+            >
               <a
                 href={track.url}
                 target="_blank"
