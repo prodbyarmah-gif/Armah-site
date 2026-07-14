@@ -112,6 +112,7 @@ const pt = {
       email: "Email",
       location: "Local",
       message: "Mensagem",
+      eventDate: "Data do evento",
       eventType: "Tipo de evento",
       producerRequest: "Pedido de produtor",
       beatSelection: "Seleção de beat",

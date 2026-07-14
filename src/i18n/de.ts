@@ -115,6 +115,7 @@ const de = {
       eventType: "Event-Typ",
       producerRequest: "Producer Anfrage",
       location: "Ort",
+      eventDate: "Event-Datum",
       beatSelect: "Beat auswählen",
       message: "Nachricht",
     },

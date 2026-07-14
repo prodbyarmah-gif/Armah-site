@@ -115,6 +115,7 @@ const es = {
       eventType: "Tipo de evento",
       producerRequest: "Solicitud de productor",
       location: "Ubicación",
+      eventDate: "Fecha del evento",
       beatSelect: "Seleccionar beat",
       message: "Mensaje",
     },

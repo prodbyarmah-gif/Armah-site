@@ -37,6 +37,7 @@ export default function Booking() {
     email: '',
     eventType: '',
     location: '',
+    eventDate: '',
     message: '',
     budgetLevel: 0,
     company: '', // honeypot (bots fill this)
@@ -148,7 +149,8 @@ export default function Booking() {
       !formData.email.trim() ||
       !formData.eventType.trim() ||
       !formData.location.trim() ||
-      !formData.message.trim()
+      !formData.message.trim() ||
+      (inquiryType === 'dj' && !formData.eventDate.trim())
     ) {
       setError(t('booking.errors.missingFields'));
       return;
@@ -171,7 +173,7 @@ export default function Booking() {
           beatTitle: inquiryType === 'producer' && formData.eventType === 'beat_license' ? (selectedBeat?.title || '') : undefined,
           location: formData.location.trim(),
           message: formData.message.trim(),
-          ...(inquiryType === 'dj' ? { budget: selectedBudgetLabel } : {}),
+          ...(inquiryType === 'dj' ? { budget: selectedBudgetLabel, eventDate: formData.eventDate } : {}),
           company: formData.company, // honeypot
           language: lang,
         }),
@@ -188,6 +190,7 @@ export default function Booking() {
         email: '',
         eventType: '',
         location: '',
+        eventDate: '',
         message: '',
         budgetLevel: 0,
         company: '',
@@ -383,6 +386,21 @@ export default function Booking() {
                     />
                   </div>
                 </div>
+
+                {isDj ? (
+                  <div>
+                    <label htmlFor="eventDate" className="block text-white/70 text-sm mb-2">{t('booking.fields.eventDate')}</label>
+                    <input
+                      type="date"
+                      id="eventDate"
+                      name="eventDate"
+                      value={formData.eventDate}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-armah-red focus:outline-none transition-colors duration-200 [color-scheme:dark]"
+                    />
+                  </div>
+                ) : null}
 
                 {inquiryType === 'dj' ? (
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5">

@@ -17,6 +17,7 @@ type BookingPayload = {
   beatId?: string;
   beatTitle?: string;
   budget?: string;
+  eventDate?: string;
   company?: string;
   language?: string;
 };
@@ -45,6 +46,7 @@ type EmailCopy = {
     eventType: string;
     location: string;
     budget: string;
+    eventDate: string;
     beatId: string;
     beatTitle: string;
   };
@@ -69,6 +71,7 @@ const TRANSLATIONS: Record<Lang, EmailCopy> = {
       eventType: 'Event-Typ',
       location: 'Ort',
       budget: 'Budget',
+      eventDate: 'Event-Datum',
       beatId: 'Beat-ID',
       beatTitle: 'Beat-Titel',
     },
@@ -88,6 +91,7 @@ const TRANSLATIONS: Record<Lang, EmailCopy> = {
       eventType: 'Event type',
       location: 'Location',
       budget: 'Budget',
+      eventDate: 'Event date',
       beatId: 'Beat ID',
       beatTitle: 'Beat title',
     },
@@ -107,6 +111,7 @@ const TRANSLATIONS: Record<Lang, EmailCopy> = {
       eventType: "Type d'événement",
       location: 'Lieu',
       budget: 'Budget',
+      eventDate: "Date de l'événement",
       beatId: 'ID du beat',
       beatTitle: 'Titre du beat',
     },
@@ -126,6 +131,7 @@ const TRANSLATIONS: Record<Lang, EmailCopy> = {
       eventType: 'Tipo de evento',
       location: 'Localização',
       budget: 'Orçamento',
+      eventDate: 'Data do evento',
       beatId: 'ID do beat',
       beatTitle: 'Título do beat',
     },
@@ -145,6 +151,7 @@ const TRANSLATIONS: Record<Lang, EmailCopy> = {
       eventType: 'Tipo de evento',
       location: 'Ubicación',
       budget: 'Presupuesto',
+      eventDate: 'Fecha del evento',
       beatId: 'ID del beat',
       beatTitle: 'Título del beat',
     },
@@ -344,6 +351,7 @@ function buildEmailHtml(details: {
   location: string;
   message: string;
   budget?: string;
+  eventDate?: string;
   beatId?: string;
   beatTitle?: string;
   language: Lang;
@@ -359,6 +367,7 @@ function buildEmailHtml(details: {
     [copy.fields.location, details.location],
   ];
 
+  if (details.eventDate) rows.push([copy.fields.eventDate, details.eventDate]);
   if (details.budget) rows.push([copy.fields.budget, details.budget]);
   if (details.beatId) rows.push([copy.fields.beatId, details.beatId]);
   if (details.beatTitle) rows.push([copy.fields.beatTitle, details.beatTitle]);
@@ -382,6 +391,7 @@ function buildAutoReplyHtml(details: {
   eventType: string;
   location: string;
   budget?: string;
+  eventDate?: string;
   beatId?: string;
   beatTitle?: string;
   language: Lang;
@@ -395,6 +405,7 @@ function buildAutoReplyHtml(details: {
     [copy.fields.location, details.location],
   ];
 
+  if (details.eventDate) rows.push([copy.fields.eventDate, details.eventDate]);
   if (details.budget) rows.push([copy.fields.budget, details.budget]);
   if (details.beatId) rows.push([copy.fields.beatId, details.beatId]);
   if (details.beatTitle) rows.push([copy.fields.beatTitle, details.beatTitle]);
@@ -458,6 +469,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const location = clean(payload?.location, 200);
     const message = clean(payload?.message, 4000);
     const budget = clean(payload?.budget, 200);
+    const eventDate = clean(payload?.eventDate, 40);
     const beatId = clean(payload?.beatId, 200);
     const beatTitle = clean(payload?.beatTitle, 200);
     const company = clean(payload?.company, 200);
@@ -492,6 +504,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       location,
       message,
       budget: inquiryType === 'dj' ? budget : undefined,
+      eventDate: inquiryType === 'dj' ? eventDate : undefined,
       beatId: inquiryType === 'producer' ? beatId : undefined,
       beatTitle: inquiryType === 'producer' ? beatTitle : undefined,
       language,
@@ -514,6 +527,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         eventType,
         location,
         budget: inquiryType === 'dj' ? budget : undefined,
+        eventDate: inquiryType === 'dj' ? eventDate : undefined,
         beatId: inquiryType === 'producer' ? beatId : undefined,
         beatTitle: inquiryType === 'producer' ? beatTitle : undefined,
         language,
