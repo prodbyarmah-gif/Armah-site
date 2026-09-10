@@ -1,45 +1,53 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <script>
+      // Public site is dark-only: initialize directly into the approved dark
+      // appearance before first paint (no light flash, no system-preference
+      // switch). The underlying light-theme implementation is preserved for
+      // a possible later restore; only the public entry point is locked.
+      try {
+        document.documentElement.dataset.theme = 'dark';
+        document.documentElement.style.colorScheme = 'dark';
+        window.localStorage.removeItem('armah-theme');
+      } catch (e) {}
+    </script>
 
     <meta
       name="description"
-      content="ARMAH - Afro & Amapiano driven DJ based in Hamburg, expanding internationally."
+      content="ARMAH, Hamburg-based Afrobeats and Amapiano DJ & Producer. Live sets, mixes and bookings in Germany, Europe and selected international events."
     />
-    <meta name="keywords" content="ARMAH, DJ, Afrobeat, Amapiano, Hamburg, Producer" />
     <meta name="author" content="Thierry Armah Thompson" />
     <meta name="theme-color" content="#000000" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://prodbyarmah.com/" />
-    <meta property="og:title" content="ARMAH | Afro & Amapiano DJ - Hamburg" />
+    <meta property="og:url" content="https://www.prodbyarmah.com/" />
+    <meta property="og:title" content="ARMAH | Afrobeats & Amapiano DJ & Producer" />
     <meta
       property="og:description"
-      content="ARMAH - Afro & Amapiano driven DJ based in Hamburg, expanding internationally."
+      content="ARMAH, Hamburg-based Afrobeats and Amapiano DJ & Producer. Live sets, mixes and bookings in Germany, Europe and selected international events."
     />
-    <meta property="og:image" content="https://prodbyarmah.com/assets/hero-bg.jpg" />
+    <meta property="og:image" content="https://www.prodbyarmah.com/assets/hero-bg.jpg" />
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="720" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ARMAH | Afro & Amapiano DJ - Hamburg" />
+    <meta name="twitter:title" content="ARMAH | Afrobeats & Amapiano DJ & Producer" />
     <meta
       name="twitter:description"
-      content="ARMAH - Afro & Amapiano driven DJ based in Hamburg, expanding internationally."
+      content="ARMAH, Hamburg-based Afrobeats and Amapiano DJ & Producer. Live sets, mixes and bookings in Germany, Europe and selected international events."
     />
-    <meta name="twitter:image" content="https://prodbyarmah.com/assets/hero-bg.jpg" />
+    <meta name="twitter:image" content="https://www.prodbyarmah.com/assets/hero-bg.jpg" />
 
-    <title>ARMAH | Afro & Amapiano DJ - Hamburg</title>
+    <title>ARMAH | Afrobeats & Amapiano DJ & Producer</title>
     <link rel="icon" type="image/png" href="/assets/ARMAH_logo_transparent_white.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" href="/assets/fonts/anton-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="canonical" href="https://www.prodbyarmah.com/" />
+    <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Person", "@id": "https://www.prodbyarmah.com/#artist", "name": "ARMAH", "url": "https://www.prodbyarmah.com/", "jobTitle": "DJ & Producer", "description": "Hamburg-based Afrobeats and Amapiano DJ & Producer.", "homeLocation": {"@type": "City", "name": "Hamburg"}, "image": "https://www.prodbyarmah.com/assets/hero-bg.jpg", "sameAs": ["https://www.instagram.com/prodbyarmah/", "https://www.youtube.com/@Prodbyarmah"]}, {"@type": "WebSite", "@id": "https://www.prodbyarmah.com/#website", "url": "https://www.prodbyarmah.com/", "name": "ARMAH", "about": {"@id": "https://www.prodbyarmah.com/#artist"}, "inLanguage": ["en", "de", "fr", "pt", "es"]}]}</script>
   </head>
   <body class="bg-black text-white antialiased">
     <div id="root"></div>

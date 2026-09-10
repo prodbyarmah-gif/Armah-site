@@ -1,16 +1,12 @@
 import { useI18n } from "../i18n";
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Play } from 'lucide-react';
+import { liveClips } from '../data/media';
+import ResponsiveImage from './ResponsiveImage';
 
 const CARD_EASE = [0.22, 1, 0.36, 1] as const;
 
-interface Clip {
-  id: string;
-  title: string;
-  videoUrl: string;
-  posterUrl: string;
-}
 
 export default function Live() {
   const { t } = useI18n();
@@ -22,34 +18,12 @@ export default function Live() {
   const [selectedClipId, setSelectedClipId] = useState<string>('01');
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  const clips: Clip[] = useMemo(() => [
-    {
-      id: '01',
-      title: `${t("live.clipLabel")} 01`,
-      videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live01_web.mp4',
-      posterUrl: '/assets/live01.jpg',
-    },
-    {
-      id: '02',
-      title: `${t("live.clipLabel")} 02`,
-      videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live02_web.mp4',
-      posterUrl: '/assets/live02.jpg',
-    },
-    {
-      id: '03',
-      title: `${t("live.clipLabel")} 03`,
-      videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live03_signature_smaller.mp4',
-      posterUrl: '/assets/live03.jpg',
-    },
-    {
-      id: '04',
-      title: `${t("live.clipLabel")} 04`,
-      videoUrl: 'https://pub-17d9dfc949e942378e7463ab8ecb35d3.r2.dev/live04_web.mp4',
-      posterUrl: '/assets/live04.jpg',
-    },
-  ], [t]);
-
-  const selectedClip = clips.find((clip) => clip.id === selectedClipId) || clips[0];
+  const [videoError, setVideoError] = useState(false);
+  const clips = liveClips.map(clip => ({ ...clip, title: `${t('live.clipLabel')} ${clip.id}` }));
+  const selectedClip = clips.find(clip => clip.id === selectedClipId) || clips[0];
+  // live02 is the strongest crowd/performance image in the existing live candidate pool.
+  // Its PH-04/PH-05 role remains intentionally unresolved in the photography manifest.
+  const backgroundClip = liveClips[1];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -95,32 +69,21 @@ export default function Live() {
     };
   }, []);
 
-  // Force the main player to actually switch sources across browsers
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-
-    // Set src explicitly (more reliable than <source> swapping across browsers)
-    v.pause();
-    v.currentTime = 0;
-    v.src = selectedClip.videoUrl;
-
-    try {
-      v.load();
-      // No autoplay. User must press play manually.
-    } catch {
-      // ignore
-    }
-  }, [selectedClip.videoUrl, hasUserInteracted]);
-
   const handlePreviewClick = (clipId: string) => {
-    if (!hasUserInteracted) setHasUserInteracted(true);
+    videoRef.current?.pause();
+    setHasUserInteracted(false);
+    setVideoError(false);
     setSelectedClipId(clipId);
   };
 
   return (
-    <section id="live" ref={sectionRef} className="relative w-full bg-black py-16 md:py-32">
-      <div className="w-full px-6 lg:px-12 xl:px-24">
+    <section id="live" ref={sectionRef} className="relative w-full overflow-hidden bg-black py-16 md:py-32">
+      <div aria-hidden="true" className="absolute inset-0">
+        <ResponsiveImage image={backgroundClip.poster} sizes="100vw" alt="" loading="lazy" className="h-full w-full object-cover object-[62%_48%] opacity-[0.68]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.2)_38%,rgba(0,0,0,0.28)_70%,rgba(0,0,0,0.78)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.06)_38%,rgba(0,0,0,0.84)_100%)]" />
+      </div>
+      <div className="relative z-10 w-full px-6 lg:px-12 xl:px-24">
         {/* Section Title */}
         <div
           className={`text-center mb-16 transition-all duration-700 ${
@@ -144,28 +107,30 @@ export default function Live() {
           <div className="w-full">
             <div className="relative w-full max-w-[420px] mx-auto">
               <div className="relative aspect-[9/16] bg-black overflow-hidden rounded-lg">
-                <video
-                  key={selectedClipId}
-                  ref={videoRef}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  poster={selectedClip.posterUrl}
-                  disablePictureInPicture
-                  disableRemotePlayback
-                  controlsList="nodownload noplaybackrate"
-                  className="w-full h-full object-contain"
-                  src={selectedClip.videoUrl}
-                  onPlay={() => setHasUserInteracted(true)}
-                />
+                {hasUserInteracted ? (
+                  <video key={selectedClipId} ref={videoRef} controls playsInline autoPlay preload="none"
+                    poster={selectedClip.poster.src} src={selectedClip.videoUrl}
+                    aria-label={selectedClip.title} className="h-full w-full object-contain"
+                    onError={() => setVideoError(true)} />
+                ) : (
+                  <button type="button" onClick={() => setHasUserInteracted(true)}
+                    aria-label={`${t('live.play')}: ${selectedClip.title}`} className="relative h-full w-full">
+                    <ResponsiveImage image={selectedClip.poster} sizes="420px" alt="" className="h-full w-full object-cover" />
+                    <span className="absolute inset-0 grid place-items-center bg-black/20">
+                      <span className="grid h-16 w-16 place-items-center rounded-full border border-white/60 bg-black/65"><Play className="ml-1 h-6 w-6" fill="white" aria-hidden="true" /></span>
+                    </span>
+                  </button>
+                )}
+
               </div>
               <p className="text-white/80 text-sm font-medium tracking-wide mt-4">{selectedClip.title}</p>
+              {videoError && <p role="alert" className="mt-3 text-sm text-white/80">{t('common.previewUnavailable')} <button type="button" className="underline" onClick={() => { setVideoError(false); setHasUserInteracted(false); }}>{t('common.retry')}</button> · <a href="#featured-live-set" className="underline">{t('mixes.featured')}</a></p>}
             </div>
           </div>
 
           {/* Preview Cards — all clips visible as tappable thumbnails (no swiping needed) */}
           <div className="relative w-full">
-            <p className="mb-3 text-center text-xs tracking-wide text-white/40 lg:hidden">
+            <p className="mb-3 text-center text-xs tracking-wide text-white/65 lg:hidden">
               {t('live.tapHint')}
             </p>
 
@@ -179,7 +144,8 @@ export default function Live() {
               {clips.map((clip) => {
                 const isSelected = clip.id === selectedClipId;
                 return (
-                  <motion.div
+                  <motion.button
+                    type="button" aria-pressed={isSelected} aria-label={clip.title}
                     key={clip.id}
                     variants={
                       reduce
@@ -196,9 +162,9 @@ export default function Live() {
                     onClick={() => handlePreviewClick(clip.id)}
                   >
                     {/* Preview Thumbnail */}
-                    <img
-                      src={clip.posterUrl}
-                      alt={clip.title}
+                    <ResponsiveImage
+                      image={clip.poster} sizes="(min-width: 1024px) 240px, 25vw"
+                      alt=""
                       loading="lazy"
                       className="w-full h-full object-cover object-top pointer-events-none select-none"
                       draggable={false}
@@ -218,7 +184,7 @@ export default function Live() {
                     <div className="absolute bottom-2 left-2 right-2 lg:bottom-3 lg:left-3 lg:right-3 z-30 pointer-events-none">
                       <p className="text-white/80 text-[10px] lg:text-xs font-medium tracking-wide truncate">{clip.title}</p>
                     </div>
-                  </motion.div>
+                  </motion.button>
                 );
               })}
             </motion.div>
@@ -227,7 +193,7 @@ export default function Live() {
       </div>
 
       {/* Decorative Line */}
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/30 to-transparent" />
+      <div className="absolute bottom-0 left-0 z-10 h-px w-full bg-gradient-to-r from-transparent via-armah-red/30 to-transparent" />
     </section>
   );
 }

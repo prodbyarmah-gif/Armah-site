@@ -5,6 +5,8 @@ const en = {
     language: "Language",
     loading: "Loading…",
     previewUnavailable: "Preview unavailable",
+  
+    retry: "Try again",
   },
 
   nav: {
@@ -14,26 +16,32 @@ const en = {
     beats: "BEAT",
     producer: "PRODUCER",
     booking: "BOOKING",
+  
+    mixes: "MIXES",
   },
 
   hero: {
-    tagline: "Afro & Amapiano driven DJ — Hamburg based, expanding internationally.",
+    tagline: "Afrobeats & Amapiano DJ & Producer.",
     cta: "BOOKING INQUIRY",
+  
+    availability: "Hamburg-based. Germany, Europe and selected international bookings.",
   },
 
   live: {
     tapHint: "Tap to switch videos",
     title: "LIVE MOMENTS",
     clipLabel: "Live Clip",
+  
+    play: "Play live clip",
   },
 
   about: {
     eyebrow: "BIO",
     title: "ABOUT ARMAH",
     short:
-      "Armah is a Hamburg-based DJ and producer with Ghanaian roots, known for blending Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB and Dancehall into high-energy sets built for real movement.",
+      "ARMAH is a Hamburg-based DJ and producer with Ghanaian roots. Afrobeats and Amapiano sit at the heart of his sound, with Dancehall and selected UK and global club influences.",
     paragraph1:
-      "Armah is a Hamburg-based DJ and producer with Ghanaian roots, connecting Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB and Dancehall into a sound shaped by rhythm, culture and club energy.",
+      "ARMAH is a Hamburg-based DJ and producer with Ghanaian roots. Afrobeats and Amapiano sit at the heart of his sound, with Dancehall and selected UK and global club influences.",
     paragraph2:
       "His sets are energetic, rhythmic and crowd-focused. Instead of simply playing songs, Armah builds moments, reads the room and creates transitions that move people from listening into full participation.",
     paragraph3:
@@ -43,9 +51,12 @@ const en = {
     facts: {
       base: "Hamburg-based",
       roots: "Ghanaian roots",
-      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      sound: "Afrobeats · Amapiano · Dancehall",
       project: "Co-founder of ZAYA Dreams",
     },
+  
+    portraitAlt: "ARMAH by the waterfront at night",
+    portraitCaption: "Hamburg sound. Ghanaian roots.",
   },
 
   shows: {
@@ -56,6 +67,11 @@ const en = {
     title: "TRUSTED BY",
     prev: "Previous",
     next: "Next",
+  
+    subtitle: "Selected bookings in Hamburg & Berlin",
+    repeat: "Booked again",
+    venueRelationship: "Venue relationship",
+    brandRelationship: "Brand relationship",
   },
 
   youtube: {
@@ -70,6 +86,12 @@ const en = {
     currentCollabLabel: "Current collaboration",
     spotifyLabel: "Spotify",
     openSpotify: "Open on Spotify",
+    releases: "Selected releases",
+    verifiedCredit: "Verified ARMAH credit",
+    creditPending: "ARMAH production credit pending confirmation",
+    portfolioCredit: "ARMAH portfolio credit",
+    platformRoleLabels: "Spotify role labels",
+    listen: "Listen",
   },
 
   beatCatalog: {
@@ -155,8 +177,8 @@ const en = {
     },
     errors: {
       selectBeat: "Please select a beat for Beat licensing inquiries.",
-      missingFields: "Please fill in Name, Email, Event Type, Location, and Message.",
-      generic: "Something went wrong.",
+      missingFields: "Please complete all required fields, including the event date for DJ bookings.",
+      generic: "Your inquiry could not be confirmed. Your details are still here. Please try again or contact booking@prodbyarmah.com.",
     },
     budget: {
       label: "Planned budget",
@@ -193,7 +215,7 @@ const en = {
   },
 
   footer: {
-    tagline: "Built in rhythm. Played worldwide.",
+    tagline: "Afrobeats. Amapiano. Hamburg roots.",
     navigation: "Navigation",
     connect: "Connect",
     rights: "All rights reserved.",
@@ -269,6 +291,44 @@ const en = {
   files_hospitalityRider: "Hospitality Rider",
 
   lang_label: "Language",
+
+  mixes: {
+    "featured": "Featured live set",
+    "more": "More mixes",
+    "play": "Play mix",
+    "watch": "Watch on YouTube",
+    "booking": "Bring ARMAH to your event",
+    "connection": "Playing a mix connects to YouTube."
+  },
+  map: {
+    "country": "Germany",
+    "history": "Booking history",
+    "openCountry": "Open Germany",
+    "openCity": "Explore city history",
+    "back": "Back to Germany",
+    "chooseEvent": "Choose event",
+    "allEvents": "All events",
+    "instagram": "View event on Instagram",
+    "chooseCity": "Choose cities",
+    "world": "World",
+    "own": "Own event",
+    "guest": "Guest appearance",
+    "close": "Close",
+    "details": "Details",
+    "approximate": "Approximate position",
+    "events": "Events",
+    "venues": "Locations",
+    "clusterHint": "venues close together — activate to choose",
+    "chooseVenue": "Choose venue"
+  },
+  accessibility: {
+    "navigation": "Main navigation",
+    "home": "Home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skip": "Skip to content",
+    "resources": "Press & booking"
+  },
 } as const;
 
 export default en;

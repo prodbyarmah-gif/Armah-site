@@ -3,6 +3,8 @@ const de = {
     language: "Sprache",
     loading: "Lädt…",
     previewUnavailable: "Preview nicht verfügbar",
+  
+    retry: "Erneut versuchen",
   },
 
   nav: {
@@ -12,25 +14,31 @@ const de = {
     beats: "BEAT",
     producer: "PRODUCER",
     booking: "BOOKING",
+  
+    mixes: "MIXES",
   },
 
   hero: {
-    tagline: "Afrobeats, Amapiano aus Hamburg - gemacht für volle Dancefloors.",
+    tagline: "Afrobeats & Amapiano. DJ & Producer.",
     cta: "BOOKING ANFRAGE",
+  
+    availability: "Aus Hamburg. Für Bookings in Deutschland, Europa und ausgewählte internationale Events.",
   },
 
   live: {
     tapHint: "Antippen, um das Video zu wechseln",
     title: "LIVE MOMENTS",
     clipLabel: "Live Clip",
+  
+    play: "Live-Clip abspielen",
   },
 
   about: {
     eyebrow: "BIO",
     title: "WER IST ARMAH?",
-    short: "Hamburg-based DJ & Producer mit ghanaischen Wurzeln, globalem Sound und echter Club-Energie.",
+    short: "ARMAH ist DJ und Producer aus Hamburg mit ghanaischen Wurzeln. Afrobeats und Amapiano prägen seinen Sound, ergänzt durch Dancehall und ausgewählte UK- und globale Club-Einflüsse.",
     paragraph1:
-      "Armah ist DJ und Producer aus Hamburg mit ghanaischen Wurzeln und einem Sound, der Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB und Dancehall miteinander verbindet.",
+      "ARMAH ist DJ und Producer aus Hamburg mit ghanaischen Wurzeln. Afrobeats und Amapiano prägen seinen Sound, ergänzt durch Dancehall und ausgewählte UK- und globale Club-Einflüsse.",
     paragraph2:
       "Sein Stil ist energiegeladen, rhythmisch und crowd-focused. Statt einfach nur Songs abzuspielen, baut Armah Sets, die Bewegung erzeugen, Übergänge bewusst setzen und den Raum lesen. Ob Club, Event oder Brand Activation: Sein Ziel ist immer derselbe Moment, in dem die Crowd nicht mehr nur zuhört, sondern komplett drin ist.",
     paragraph3:
@@ -40,9 +48,12 @@ const de = {
     facts: {
       base: "Hamburg",
       roots: "Ghanaische Wurzeln",
-      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      sound: "Afrobeats · Amapiano · Dancehall",
       project: "Co-Founder von ZAYA Dreams",
     },
+  
+    portraitAlt: "ARMAH nachts am Wasser",
+    portraitCaption: "Hamburger Sound. Ghanaische Wurzeln.",
   },
 
   shows: {
@@ -53,6 +64,11 @@ const de = {
     title: "VERTRAUT VON",
     prev: "Zurück",
     next: "Weiter",
+  
+    subtitle: "Ausgewählte Bookings in Hamburg & Berlin",
+    repeat: "Erneut gebucht",
+    venueRelationship: "Venue-Beziehung",
+    brandRelationship: "Brand-Beziehung",
   },
 
   youtube: {
@@ -67,6 +83,12 @@ const de = {
     currentCollabLabel: "Aktuelle Kollaboration",
     spotifyLabel: "Spotify",
     openSpotify: "Spotify öffnen",
+    releases: "Ausgewählte Releases",
+    verifiedCredit: "Bestätigter ARMAH-Credit",
+    creditPending: "ARMAH Production-Credit noch unbestätigt",
+    portfolioCredit: "ARMAH Portfolio-Credit",
+    platformRoleLabels: "Spotify-Rollenbezeichnungen",
+    listen: "Anhören",
   },
 
   beatCatalog: {
@@ -164,8 +186,8 @@ const de = {
 
     errors: {
       selectBeat: "Bitte wähle einen Beat für Beat-Licensing aus.",
-      missingFields: "Bitte fülle Name, E-Mail, Event-Typ, Ort und Nachricht aus.",
-      generic: "Etwas ist schiefgelaufen.",
+      missingFields: "Bitte fülle alle Pflichtfelder aus, bei DJ-Bookings auch das Event-Datum.",
+      generic: "Deine Anfrage konnte nicht bestätigt werden. Deine Angaben sind erhalten. Versuche es erneut oder schreibe an booking@prodbyarmah.com.",
     },
 
     budget: {
@@ -192,7 +214,7 @@ const de = {
   },
 
   footer: {
-    tagline: "Built in rhythm. Played worldwide.",
+    tagline: "Afrobeats. Amapiano. Hamburger Wurzeln.",
     navigation: "Navigation",
     connect: "Kontakt",
     rights: "Alle Rechte vorbehalten.",
@@ -214,6 +236,44 @@ const de = {
   booking_license_inquiry: "Lizenz anfragen",
   common_loading: "Lädt…",
   common_preview_unavailable: "Preview nicht verfügbar",
+
+  mixes: {
+    "featured": "Featured Live Set",
+    "more": "Weitere Mixes",
+    "play": "Mix abspielen",
+    "watch": "Auf YouTube ansehen",
+    "booking": "ARMAH für dein Event anfragen",
+    "connection": "Beim Abspielen wird eine Verbindung zu YouTube hergestellt."
+  },
+  map: {
+    "country": "Deutschland",
+    "history": "Booking-Historie",
+    "openCountry": "Deutschland öffnen",
+    "openCity": "Stadt-Historie öffnen",
+    "back": "Zurück zur Deutschlandkarte",
+    "chooseEvent": "Event wählen",
+    "allEvents": "Alle Events",
+    "instagram": "Event auf Instagram ansehen",
+    "chooseCity": "Städte wählen",
+    "world": "Welt",
+    "own": "Eigene Veranstaltung",
+    "guest": "Gastauftritt",
+    "close": "Schließen",
+    "details": "Details",
+    "approximate": "Ungefähre Position",
+    "events": "Events",
+    "venues": "Locations",
+    "clusterHint": "Veranstaltungsorte nah beieinander – aktivieren zum Auswählen",
+    "chooseVenue": "Veranstaltungsort wählen"
+  },
+  accessibility: {
+    "navigation": "Hauptnavigation",
+    "home": "Startseite",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "skip": "Zum Inhalt springen",
+    "resources": "Presse & Booking"
+  },
 } as const;
 
 export default de;

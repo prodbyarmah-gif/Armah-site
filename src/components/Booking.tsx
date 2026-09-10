@@ -1,6 +1,8 @@
 import { useI18n } from "../i18n";
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Send, Check, FileText } from 'lucide-react';
+import { bookingWasAccepted } from '../lib/bookingResponse';
+import { riderResources } from '../data/bookingResources';
 import { beatOptions, type BeatOption } from './Producer';
 
 const DJ_EVENT_TYPES = ['club', 'festival', 'private', 'corporate', 'other'] as const;
@@ -23,6 +25,7 @@ export default function Booking() {
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const sendingRef = useRef(false);
   const [error, setError] = useState('');
   const [inquiryType, setInquiryType] = useState<InquiryType>('dj');
   const [selectedBeatId, setSelectedBeatId] = useState<string>('');
@@ -92,7 +95,7 @@ export default function Booking() {
 
     const applyPrefill = () => {
       const beatId = getBeatIdFromLocation();
-      if (!beatId) return;
+      if (!beatId || !beatOptions.some(beat => beat.id === beatId)) return;
 
       isAutoPrefillingRef.current = true;
       setInquiryType('producer');
@@ -136,10 +139,11 @@ export default function Booking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sendingRef.current) return;
     setError('');
 
     // simple client-side validation (matches backend requirements)
-    if (inquiryType === 'producer' && formData.eventType === 'beat_license' && !selectedBeatId) {
+    if (inquiryType === 'producer' && formData.eventType === 'beat_license' && !selectedBeat) {
       setError(t('booking.errors.selectBeat'));
       return;
     }
@@ -156,6 +160,7 @@ export default function Booking() {
       return;
     }
 
+    sendingRef.current = true;
     setIsSending(true);
     try {
       const selectedBudgetKey = BUDGET_LEVELS.find((option) => option.value === formData.budgetLevel)?.key || 'unspecified';
@@ -179,9 +184,8 @@ export default function Booking() {
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || 'Send failed');
+      if (!await bookingWasAccepted(res)) {
+        throw new Error('Booking not accepted');
       }
 
       setIsSubmitted(true);
@@ -196,9 +200,10 @@ export default function Booking() {
         company: '',
       });
       setSelectedBeatId('');
-    } catch (err: any) {
-      setError(err?.message || t('booking.errors.generic'));
+    } catch {
+      setError(t('booking.errors.generic'));
     } finally {
+      sendingRef.current = false;
       setIsSending(false);
     }
   };
@@ -207,9 +212,9 @@ export default function Booking() {
     <section 
       id="booking" 
       ref={sectionRef}
-      className="relative w-full bg-black py-24 md:py-32"
+      className="booking-section relative w-full py-24 md:py-32"
     >
-      <div className="w-full px-6 lg:px-12 xl:px-24">
+      <div className="booking-panel relative z-10 mx-4 max-w-[720px] px-2 py-8 sm:mx-6 sm:px-6 lg:ml-auto lg:mr-12 lg:px-10 xl:mr-24 xl:px-12">
         {/* Section Title */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h2 className="font-head text-4xl md:text-5xl lg:text-6xl text-white tracking-tight uppercase">
@@ -240,7 +245,7 @@ export default function Booking() {
           {isDj ? (
             <div className={`flex flex-wrap justify-center gap-4 mb-12 transition-all duration-700 delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <a
-                href="/assets/TECHNICAL%20RIDER%20.pdf"
+                href={riderResources.technical}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
@@ -249,7 +254,7 @@ export default function Booking() {
                 <span className="text-sm tracking-wide">{t('booking.technicalRider')}</span>
               </a>
               <a
-                href="/assets/HOSPITALITY%20RIDER.pdf"
+                href={riderResources.hospitality}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 hover:border-armah-red/50 bg-white/5 hover:bg-armah-red/10 text-white/80 hover:text-white transition-all duration-200"
@@ -263,7 +268,7 @@ export default function Booking() {
           {/* Contact Form */}
           <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {isSubmitted ? (
-              <div className="text-center py-16">
+              <div role="status" aria-live="polite" className="text-center py-16">
                 <div className="w-16 h-16 rounded-full bg-armah-red flex items-center justify-center mx-auto mb-6">
                   <Check className="w-8 h-8 text-white" />
                 </div>
@@ -275,7 +280,8 @@ export default function Booking() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} aria-busy={isSending} className="space-y-6">
+                <fieldset disabled={isSending} className="space-y-6">
                 {/* Honeypot (anti-spam) */}
                 <input
                   type="text"
@@ -287,17 +293,17 @@ export default function Booking() {
                   autoComplete="off"
                 />
                 {error ? (
-                  <div className="border border-armah-red/40 bg-armah-red/10 text-white/80 text-sm px-4 py-3 rounded-lg">
+                  <div role="alert" className="border border-armah-red/40 bg-armah-red/10 text-white/80 text-sm px-4 py-3 rounded-lg">
                     {error}
                   </div>
                 ) : null}
                 {/* Inquiry Type (DJ / Producer) */}
                 <div>
-                  <label className="block text-white/70 text-sm mb-2 text-center">{t('booking.inquiryType')}</label>
+                  <p className="block text-white/70 text-sm mb-2 text-center">{t('booking.inquiryType')}</p>
                   <div className="flex gap-2 justify-center">
                     <button
                       type="button"
-                      onClick={() => setInquiryType('dj')}
+                      aria-pressed={isDj} onClick={() => setInquiryType('dj')}
                       className={`px-4 py-2 rounded-full border text-sm font-semibold tracking-wide transition
                         ${inquiryType === 'dj'
                           ? 'border-white/30 bg-white/[0.08] text-white'
@@ -309,7 +315,7 @@ export default function Booking() {
 
                     <button
                       type="button"
-                      onClick={() => setInquiryType('producer')}
+                      aria-pressed={!isDj} onClick={() => setInquiryType('producer')}
                       className={`px-4 py-2 rounded-full border text-sm font-semibold tracking-wide transition
                         ${inquiryType === 'producer'
                           ? 'border-white/30 bg-white/[0.08] text-white'
@@ -326,7 +332,7 @@ export default function Booking() {
                     <label htmlFor="name" className="block text-white/70 text-sm mb-2">{t('booking.fields.name')}</label>
                     <input
                       type="text"
-                      id="name"
+                      id="name" maxLength={120}
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
@@ -339,7 +345,7 @@ export default function Booking() {
                     <label htmlFor="email" className="block text-white/70 text-sm mb-2">{t('booking.fields.email')}</label>
                     <input
                       type="email"
-                      id="email"
+                      id="email" maxLength={200}
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
@@ -376,7 +382,7 @@ export default function Booking() {
                     <label htmlFor="location" className="block text-white/70 text-sm mb-2">{t('booking.fields.location')}</label>
                     <input
                       type="text"
-                      id="location"
+                      id="location" maxLength={200}
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
@@ -424,7 +430,7 @@ export default function Booking() {
                       className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10"
                       style={{ accentColor: '#B91C1C' }}
                     />
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.2em] text-white/35">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.2em] text-white/65">
                       <span>{t('booking.budget.unspecified')}</span>
                       <span>{t('booking.budget.over1000')}</span>
                     </div>
@@ -487,7 +493,7 @@ export default function Booking() {
                 <div>
                   <label htmlFor="message" className="block text-white/70 text-sm mb-2">{t('booking.fields.message')}</label>
                   <textarea
-                    id="message"
+                    id="message" maxLength={4000}
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
@@ -502,11 +508,12 @@ export default function Booking() {
                 <button
                   type="submit"
                   disabled={isSending}
-                  className={`w-full rounded-2xl border border-white/10 bg-[#B91C1C] px-8 py-4 font-head text-sm uppercase tracking-[0.15em] text-white shadow-[0_18px_45px_rgba(185,28,28,0.18)] transition-all duration-300 hover:bg-[#D72632] hover:shadow-[0_0_28px_rgba(185,28,28,0.45)] flex items-center justify-center gap-3 ${isSending ? 'opacity-70 cursor-not-allowed hover:shadow-none' : ''}`}
+                  className={`booking-submit w-full rounded-2xl border border-white/10 bg-[#B91C1C] px-8 py-4 font-head text-sm uppercase tracking-[0.15em] text-white shadow-[0_18px_45px_rgba(185,28,28,0.18)] transition-all duration-300 hover:bg-[#D72632] hover:shadow-[0_0_28px_rgba(185,28,28,0.45)] flex items-center justify-center gap-3 ${isSending ? 'opacity-70 cursor-not-allowed hover:shadow-none' : ''}`}
                 >
                   <span>{isSending ? t('booking.sending') : t('booking.send')}</span>
                   <Send className="w-4 h-4" />
                 </button>
+                </fieldset>
               </form>
             )}
           </div>

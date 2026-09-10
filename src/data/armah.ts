@@ -1,3 +1,4 @@
+import { imageAssets } from './media';
 // ARMAH Website Data Configuration
 // This file must contain ONLY data/config helpers (no React components).
 
@@ -5,7 +6,7 @@ export const siteConfig = {
   email: 'prodbyarmah@gmail.com',
   instagram: 'https://www.instagram.com/prodbyarmah/',
   artistName: 'ARMAH',
-  tagline: 'Afro & Amapiano driven DJ — Hamburg based, expanding internationally.',
+  tagline: 'Afrobeats & Amapiano DJ & Producer. Hamburg-based.',
   impressum: {
     name: 'Thierry Armah Thompson',
     brand: 'ARMAH',
@@ -21,62 +22,62 @@ export const siteConfig = {
 export const trustedEvents = [
   {
     name: 'Amapiano Hamburg',
-    logo: '/assets/logos/Amahh.png',
+    logo: imageAssets["venue-amahh"],
     url: 'https://www.instagram.com/amapianohamburg/',
   },
   {
     name: 'Roots Entertainment',
-    logo: '/assets/logos/roots.png',
+    logo: imageAssets["venue-roots"],
     url: 'https://www.instagram.com/roots.entertainment/',
   },
   {
     name: 'We Outside',
-    logo: '/assets/logos/we outside.png',
+    logo: imageAssets["venue-we-outside"],
     url: 'https://www.instagram.com/p/DMNCUSps_HX/',
   },
   {
     name: 'Golden Cut',
-    logo: '/assets/logos/golden cut.png',
+    logo: imageAssets["venue-golden-cut"],
     url: 'https://www.instagram.com/p/DLVG2yqN0M_/',
   },
   {
     name: 'Enchanted',
-    logo: '/assets/logos/enchanted.png',
+    logo: imageAssets["venue-enchanted"],
     url: 'https://www.instagram.com/reel/DKG7FHmCg-9/',
   },
   {
     name: 'Afro Slot',
-    logo: '/assets/logos/Afroslot.png',
+    logo: imageAssets["venue-afroslot"],
     url: 'https://www.instagram.com/reel/DI1dj7YsIKO/',
   },
   {
     name: 'YOTO',
-    logo: '/assets/logos/yoto.png',
+    logo: imageAssets["venue-yoto"],
     url: 'https://www.instagram.com/reel/DPQoM9ijZEV/',
   },
   {
     name: "L'Atelier Studios",
-    logo: "/assets/logos/L'atilier.png",
+    logo: imageAssets["venue-l-atilier"],
     url: 'https://www.instagram.com/reel/DMqgXDdMFe3/',
   },
   {
     name: 'Queens & Clouds',
-    logo: '/assets/logos/queens and clouds.png',
+    logo: imageAssets["venue-queens-and-clouds"],
     url: 'https://www.instagram.com/p/DPG1ox_CHj7/',
   },
   {
     name: 'BRICKS Berlin',
-    logo: '/assets/logos/Bricks.png',
+    logo: imageAssets["venue-bricks"],
     url: 'https://www.instagram.com/reel/DJr3PfwsX8f/',
   },
   {
     name: 'Foot Locker',
-    logo: '/assets/logos/footlocker.png',
+    logo: imageAssets["venue-footlocker"],
     url: 'https://www.instagram.com/p/DQHgyKVCkab/',
   },
   {
     name: "Monteezy's World",
-    logo: '/assets/logos/p montana.png',
+    logo: imageAssets["venue-p-montana"],
     url: 'https://www.instagram.com/reel/DOWbwTkjPzo/',
   },
 ];

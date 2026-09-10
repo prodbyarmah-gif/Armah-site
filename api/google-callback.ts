@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { oauthStateForAdminKey } from './google-auth';
 
 function renderPage(title: string, body: string) {
   return `<!DOCTYPE html>
@@ -28,11 +29,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(405).end();
     return;
   }
+  // Never cache: responses may carry a one-time refresh token.
+  res.setHeader('Cache-Control', 'no-store');
 
   const code = typeof req.query?.code === 'string' ? req.query.code : '';
   if (!code) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.status(400).send(renderPage('OAuth callback error', 'No authorization code was provided.'));
+    return;
+  }
+
+  // Only accept callbacks for flows initiated via /api/google-auth (state
+  // binding). The admin key itself never travels in the OAuth redirect.
+  const adminKey = process.env.GOOGLE_OAUTH_ADMIN_KEY || '';
+  const state = typeof req.query?.state === 'string' ? req.query.state : '';
+  if (!adminKey || state !== oauthStateForAdminKey(adminKey)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.status(400).send(renderPage('OAuth callback error', 'Invalid OAuth state. Please restart the authorization flow from the admin link.'));
     return;
   }
 

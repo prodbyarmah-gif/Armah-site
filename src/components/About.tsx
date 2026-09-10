@@ -3,20 +3,21 @@ import { Reveal, RevealGroup, RevealItem } from './Reveal';
 
 const FACT_KEYS = ['base', 'roots', 'sound', 'project'] as const;
 const PARAGRAPH_KEYS = ['paragraph1', 'paragraph2', 'paragraph3', 'paragraph4'] as const;
-const BIO_IMAGE = '/assets/bio-main.jpg';
+import { photographyPreview } from '../data/photographyPreview';
+import ResponsiveImage from './ResponsiveImage';
 
 export default function About(): JSX.Element {
   const { t } = useI18n();
 
   return (
-    <section id="about" className="relative w-full overflow-hidden bg-black py-24 md:py-32">
-      <div className="w-full px-6 lg:px-12 xl:px-24">
+    <section id="about" className="bio-section relative w-full py-24 md:py-32">
+      <div className="relative z-10 w-full px-6 lg:px-12 xl:px-24">
         <div className="mx-auto grid max-w-[1380px] grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1fr)] lg:gap-16">
           <Reveal className="relative min-h-[480px] overflow-hidden border border-white/10 bg-[#050505] sm:min-h-[560px]">
-            <img
-              src={BIO_IMAGE}
-              alt="Armah portrait"
-              className="absolute inset-0 h-full w-full object-cover object-[50%_54%] opacity-92"
+            <ResponsiveImage
+              image={photographyPreview.ph09} sizes="(min-width: 1024px) 45vw, 100vw"
+              alt="ARMAH in sunlight near a window."
+              className="absolute inset-0 h-full w-full object-cover object-center opacity-92"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.06),rgba(0,0,0,0.72))]" />
@@ -27,13 +28,10 @@ export default function About(): JSX.Element {
               <p className="max-w-[12ch] font-head text-5xl uppercase leading-none text-white sm:text-6xl">
                 ARMAH
               </p>
-              <p className="mt-3 max-w-xs text-sm leading-6 text-white/64">
-                Hamburg sound, Ghanaian roots, built for real movement.
-              </p>
             </div>
           </Reveal>
 
-          <Reveal delay={0.08}>
+          <Reveal delay={0.08} className="bio-copy">
             <span className="text-xs font-semibold uppercase tracking-[0.28em] text-armah-red">
               {t('about.eyebrow')}
             </span>
@@ -45,11 +43,11 @@ export default function About(): JSX.Element {
               {t('about.short')}
             </p>
 
-            <RevealGroup className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <RevealGroup className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {FACT_KEYS.map((key) => (
                 <RevealItem key={key}>
-                  <div className="border-l border-armah-red/55 bg-white/[0.025] px-4 py-3">
-                    <p className="text-sm leading-6 text-white/70">{t(`about.facts.${key}`)}</p>
+                  <div className="border-l-2 border-armah-red/70 bg-white/[0.025] px-5 py-4">
+                    <p className="font-head text-lg uppercase leading-7 tracking-wide text-white/90 md:text-xl">{t(`about.facts.${key}`)}</p>
                   </div>
                 </RevealItem>
               ))}
@@ -65,8 +63,6 @@ export default function About(): JSX.Element {
           </Reveal>
         </div>
       </div>
-
-      <div className="absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-armah-red/30 to-transparent" />
     </section>
   );
 }

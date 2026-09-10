@@ -11,12 +11,16 @@ const pt = {
     beats: "BEAT",
     producer: "PRODUTOR",
     booking: "BOOKING",
+  
+    mixes: "MIXES",
   },
 
   // Hero
   hero: {
-    tagline: "DJ Afro & Amapiano — baseado em Hamburgo, a expandir internacionalmente.",
+    tagline: "DJ e produtor de Afrobeats & Amapiano.",
     cta: "PEDIDO DE BOOKING",
+  
+    availability: "Sediado em Hamburgo. Bookings na Alemanha, Europa e eventos internacionais selecionados.",
   },
 
   // Sections / titles
@@ -30,15 +34,17 @@ const pt = {
   live: {
     tapHint: "Toque para mudar de vídeo",
     title: "MOMENTOS AO VIVO",
+  
+    play: "Reproduzir vídeo ao vivo",
   },
 
   about: {
     eyebrow: "BIO",
     title: "SOBRE ARMAH",
     short:
-      "Armah é DJ e produtor baseado em Hamburgo, com raízes ganesas, misturando Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB e Dancehall em sets energéticos.",
+      "ARMAH é DJ e produtor sediado em Hamburgo, com raízes ganesas. Afrobeats e Amapiano estão no centro do seu som, com Dancehall e influências selecionadas da música de clube britânica e global.",
     paragraph1:
-      "Armah é DJ e produtor de Hamburgo, com raízes ganesas, e um som que liga Afrobeats, Amapiano, Afro-House, UK, Hip-Hop, RnB e Dancehall.",
+      "ARMAH é DJ e produtor sediado em Hamburgo, com raízes ganesas. Afrobeats e Amapiano estão no centro do seu som, com Dancehall e influências selecionadas da música de clube britânica e global.",
     paragraph2:
       "O seu estilo é energético, rítmico e focado no público. Em vez de apenas tocar músicas, Armah constrói sets que criam movimento, colocam transições com intenção e leem a energia da sala.",
     paragraph3:
@@ -48,9 +54,12 @@ const pt = {
     facts: {
       base: "Baseado em Hamburgo",
       roots: "Raízes ganesas",
-      sound: "Afrobeats · Amapiano · Hip-Hop · RnB · Dancehall",
+      sound: "Afrobeats · Amapiano · Dancehall",
       project: "Cofundador da ZAYA Dreams",
     },
+  
+    portraitAlt: "ARMAH junto à água à noite",
+    portraitCaption: "Som de Hamburgo. Raízes ganesas.",
   },
 
   shows: {
@@ -63,6 +72,12 @@ const pt = {
     currentCollabLabel: "Colaboração atual",
     spotifyLabel: "Spotify",
     openSpotify: "Abrir no Spotify",
+    releases: "Lançamentos selecionados",
+    verifiedCredit: "Crédito ARMAH verificado",
+    creditPending: "Crédito de produção de ARMAH pendente de confirmação",
+    portfolioCredit: "Crédito de portfólio ARMAH",
+    platformRoleLabels: "Funções indicadas pelo Spotify",
+    listen: "Ouvir",
     browseHint: "Explora alguns rascunhos e colaborações.",
     previewSeekHint: "Prévia (clique na forma de onda para avançar)",
     links: {
@@ -160,8 +175,8 @@ const pt = {
     },
     errors: {
       selectBeat: "Por favor seleciona um beat para pedidos de licença.",
-      missingFields: "Por favor preenche Nome, Email, Tipo de evento, Local e Mensagem.",
-      generic: "Algo correu mal.",
+      missingFields: "Preencha todos os campos obrigatórios, incluindo a data para bookings de DJ.",
+      generic: "Não foi possível confirmar o seu pedido. Os seus dados continuam no formulário. Tente novamente ou contacte booking@prodbyarmah.com.",
     },
       budget: {
         label: "Orçamento previsto",
@@ -180,6 +195,11 @@ const pt = {
     title: "CONFIADO POR",
     prev: "Anterior",
     next: "Seguinte",
+  
+    subtitle: "Bookings selecionados em Hamburgo e Berlim",
+    repeat: "Convidado novamente",
+    venueRelationship: "Relação com o espaço",
+    brandRelationship: "Relação com a marca",
   },
 
   youtube: {
@@ -190,7 +210,7 @@ const pt = {
   },
 
   footer: {
-    tagline: "Construído com ritmo. Tocando pelo mundo.",
+    tagline: "Afrobeats. Amapiano. Raízes em Hamburgo.",
     navigation: "Navegação",
     connect: "Contacto",
     rights: "Todos os direitos reservados.",
@@ -242,6 +262,46 @@ const pt = {
   common: {
     loading: "A carregar…",
     previewUnavailable: "Prévia indisponível",
+  
+    retry: "Tentar novamente",
+  },
+
+  mixes: {
+    "featured": "Live set em destaque",
+    "more": "Mais mixes",
+    "play": "Reproduzir mix",
+    "watch": "Ver no YouTube",
+    "booking": "Convidar ARMAH para o seu evento",
+    "connection": "A reprodução estabelece uma ligação ao YouTube."
+  },
+  map: {
+    "country": "Alemanha",
+    "history": "Histórico de bookings",
+    "openCountry": "Ver Alemanha",
+    "openCity": "Explorar esta cidade",
+    "back": "Voltar à Alemanha",
+    "chooseEvent": "Escolher evento",
+    "allEvents": "Todos os eventos",
+    "instagram": "Ver no Instagram",
+    "chooseCity": "Escolher cidade",
+    "world": "Mundo",
+    "own": "Evento próprio",
+    "guest": "Artista convidado",
+    "close": "Fechar",
+    "details": "Detalhes",
+    "approximate": "Posição aproximada",
+    "events": "Eventos",
+    "venues": "Locais",
+    "clusterHint": "locais próximos — ativar para escolher",
+    "chooseVenue": "Escolher local"
+  },
+  accessibility: {
+    "navigation": "Navegação principal",
+    "home": "Início",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "skip": "Ir para o conteúdo",
+    "resources": "Imprensa & booking"
   },
 } as const;
 

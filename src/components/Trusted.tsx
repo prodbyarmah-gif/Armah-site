@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import type { FocusEvent as ReactFocusEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { highlights, trustedEvents } from '../data/armah';
 import { Reveal } from './Reveal';
+import ResponsiveImage from './ResponsiveImage';
+import { STOPS, type Stop, type Venue } from '../data/performances';
+import { homepageRelationships } from '../lib/repeatBookings';
+import { publicDateLine, historyLabel, groupOverlappingPins, absorbPinsUnderBadges, resolveActiveVenue } from '../lib/mapUi';
 
 const WORLD_GEO = '/assets/world-110m.json';
 const GERMANY_GEO = '/assets/germany-states.geo.json';
@@ -38,67 +43,12 @@ const CITY_TILE_VIEWS: Record<string, TileView> = {
   },
 };
 
-const cityTilePreloadCache = new Map<string, Promise<void>>();
 
 // Look up the Instagram link for an event by name (single source of truth).
 const URL_BY_NAME: Record<string, string> = Object.fromEntries(
   trustedEvents.map((e) => [e.name, e.url])
 );
 
-type Venue = {
-  name: string; // the real location / club
-  coords?: [number, number];
-  address?: string;
-  own?: boolean; // your own event happened here
-  events?: string[]; // which event(s)/brand(s) ran here
-  count?: number; // times played here
-  approx?: boolean; // coordinates still approximate (need exact address)
-};
-type Stop = { city: string; coords: [number, number]; zoom: number; venues: Venue[] };
-
-// 👉 Real locations per city. coords from OpenStreetMap; `approx:true` = still estimated.
-const STOPS: Stop[] = [
-  {
-    city: 'Hamburg',
-    coords: [9.962, 53.56],
-    zoom: 48,
-    venues: [
-      { name: 'Halo', coords: [9.9580213, 53.5502314], own: true, events: ['Zaya Dreams'] },
-      { name: 'Uwe', coords: [9.9704241, 53.5565464], own: true, events: ['Zaya Dreams'] },
-      { name: 'Club 25', coords: [9.9660033, 53.550125], events: ['Amapiano Hamburg'] },
-      { name: 'Golden Cut', coords: [10.0064963, 53.5550554], events: ['Golden Cut'], count: 3 },
-      { name: 'YOTO', coords: [9.9610207, 53.5623242], events: ['We Outside', 'YOTO', 'Enchanted', 'Queens & Clouds'] },
-      { name: 'Edelfettwerk', coords: [9.9056241, 53.5955002], events: ['We Outside'] },
-      { name: 'Thomas Read', coords: [9.9566397, 53.5500714], events: ['We Outside'] },
-      { name: 'Berliner Bahnhof', coords: [10.0063896, 53.5471794], events: ['We Outside'] },
-      { name: 'Café Schöne Aussichten', coords: [9.9857544, 53.558469], events: ['We Outside'] },
-      { name: '45 Herz Gelände', coords: [9.9710102, 53.5634063], events: ['We Outside'] },
-      { name: 'Kairo Beach', coords: [9.938, 53.546], approx: true, events: ["L'Atelier Studios"] },
-      { name: 'Golden Pudel', coords: [9.9577662, 53.5461935], events: ['Afro Slot'] },
-      { name: 'Westfield Hamburg', coords: [9.9991553, 53.5397349], events: ['Foot Locker'], count: 4 },
-    ],
-  },
-  {
-    city: 'Berlin',
-    coords: [13.414, 52.507],
-    zoom: 42,
-    venues: [
-      { name: 'BRICKS Berlin', coords: [13.3883, 52.5122], events: ['We Outside'] },
-      {
-        name: 'Skate Yard',
-        coords: [13.453496, 52.507928],
-        address: 'Revaler Str. 99, 10245 Berlin',
-        events: ['We Outside'],
-      },
-      {
-        name: 'Corner TT - Blücherstraße',
-        coords: [13.392376, 52.496517],
-        address: 'Blücherstraße / Blücherplatz, 10961 Berlin',
-        events: ['On My Mind'],
-      },
-    ],
-  },
-];
 
 function venueCoord(stop: Stop, v: Venue, i: number): [number, number] {
   if (v.coords) return v.coords;
@@ -121,11 +71,19 @@ function eventVenues(stop: Stop, event: string) {
   return stop.venues.filter((venue) => venueMatchesEvent(venue, event));
 }
 
-function formatVenueLocation(venue: Venue) {
-  return `${venue.name}${venue.count ? ` ×${venue.count}` : ''}${venue.address ? ` · ${venue.address}` : ''}${
-    venue.approx ? ' · ungefähre Position' : ''
+function formatVenueLocation(venue: Venue, approximate: string) {
+  return `${venue.name}${venue.subtitle ? ` · ${venue.subtitle}` : ''}${venue.count ? ` ×${venue.count}` : ''}${venue.address ? ` · ${venue.address}` : ''}${
+    venue.approx ? ` · ${approximate}` : ''
   }`;
 }
+
+// Visual tappability threshold: pins closer than this (center to center, in
+// displayed pixels) are grouped into one cluster chooser instead of
+// overlapping. Stored coordinates are never altered.
+const CLUSTER_PX = 40;
+// Minimum clearance between a cluster badge center and any standalone pin:
+// closer singletons join the cluster so no pin hides underneath a badge.
+const BADGE_CLEARANCE_PX = 44;
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
@@ -147,10 +105,10 @@ function getTileLayout(tileView: TileView) {
   };
 
   const mapTileCount = 2 ** tileView.zoom;
-  const mapTileStartX = Math.floor(mapTopLeft.x / TILE_SIZE) - 1;
-  const mapTileEndX = Math.floor((mapTopLeft.x + tileView.width) / TILE_SIZE) + 1;
-  const mapTileStartY = Math.floor(mapTopLeft.y / TILE_SIZE) - 1;
-  const mapTileEndY = Math.floor((mapTopLeft.y + tileView.height) / TILE_SIZE) + 1;
+  const mapTileStartX = Math.floor(mapTopLeft.x / TILE_SIZE);
+  const mapTileEndX = Math.floor((mapTopLeft.x + tileView.width - 1) / TILE_SIZE);
+  const mapTileStartY = Math.floor(mapTopLeft.y / TILE_SIZE);
+  const mapTileEndY = Math.floor((mapTopLeft.y + tileView.height - 1) / TILE_SIZE);
 
   const tiles = Array.from(
     { length: mapTileEndX - mapTileStartX + 1 },
@@ -190,44 +148,6 @@ function getTileUrl(zoom: number, x: number, y: number) {
   return `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
 }
 
-function preloadImage(url: string) {
-  if (typeof window === 'undefined') return Promise.resolve();
-
-  return new Promise<void>((resolve) => {
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
-      if (typeof image.decode === 'function') {
-        void image.decode().then(() => resolve()).catch(() => resolve());
-        return;
-      }
-
-      resolve();
-    };
-    image.onerror = () => resolve();
-    image.src = url;
-  });
-}
-
-function preloadCityTiles(stop: Stop) {
-  const cacheKey = stop.city;
-  const cached = cityTilePreloadCache.get(cacheKey);
-  if (cached) return cached;
-
-  const tileView = getCityTileView(stop);
-  const { tiles } = getTileLayout(tileView);
-  const urls = Array.from(new Set(tiles.map((tile) => getTileUrl(tileView.zoom, tile.x, tile.y))));
-  const promise = Promise.all(urls.map(preloadImage)).then(() => undefined);
-  cityTilePreloadCache.set(cacheKey, promise);
-
-  return promise;
-}
-
-function preloadMapJson(url: string) {
-  if (typeof window === 'undefined') return;
-  void fetch(url, { cache: 'force-cache' }).catch(() => undefined);
-}
-
 const markerOffsets: Record<string, { x: number; y: number }> = {
   Halo: { x: -20, y: -2 },
   'Club 25': { x: 18, y: 4 },
@@ -259,6 +179,7 @@ function WorldMap({
   reduce: boolean | null;
   mobile: boolean;
 }) {
+  const { t } = useI18n();
   const [countryPopoverOpen, setCountryPopoverOpen] = useState(false);
 
   return (
@@ -280,7 +201,7 @@ function WorldMap({
               const isGermany = geo.properties?.name === 'Germany';
 
               return (
-                <Geography
+                <Geography tabIndex={-1}
                   key={geo.rsmKey}
                   geography={geo}
                   onClick={isGermany ? onOpenCountry : undefined}
@@ -307,7 +228,8 @@ function WorldMap({
         </Geographies>
         <Marker
           coordinates={NATIONAL_CENTER}
-          onClick={onOpenCountry}
+          role="button" tabIndex={0} aria-label={t('map.openCountry')}
+          onKeyDown={(event: React.KeyboardEvent<SVGElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpenCountry(); } }} onClick={onOpenCountry}
           onMouseEnter={() => setCountryPopoverOpen(true)}
           onMouseLeave={() => setCountryPopoverOpen(false)}
           onFocus={() => setCountryPopoverOpen(true)}
@@ -335,7 +257,7 @@ function WorldMap({
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="pointer-events-none absolute left-[60%] top-[35%] -translate-x-1/2 -translate-y-full rounded-2xl border border-white/15 bg-black/90 px-3 py-2 text-center shadow-[0_14px_35px_rgba(0,0,0,0.5)] backdrop-blur-md"
           >
-            <p className="font-head text-base uppercase leading-none text-white">Deutschland</p>
+            <p className="font-head text-base uppercase leading-none text-white">{t('map.country')}</p>
             <p className="mt-1 text-[10px] font-medium leading-none text-armah-red">Hamburg · Berlin</p>
           </motion.div>
         )}
@@ -349,17 +271,99 @@ function CityTileMap({
   selectedEvent,
   hoveredEvent,
   hoveredVenue,
+  pinnedVenue,
   onVenueHover,
+  onVenuePin,
+  onBack,
 }: {
   stop: Stop;
   selectedEvent: string | null;
   hoveredEvent: string | null;
   hoveredVenue: string | null;
+  pinnedVenue: string | null;
   onVenueHover: (venue: string | null) => void;
+  onVenuePin: (venue: string) => void;
+  onBack: () => void;
 }) {
+  const { t } = useI18n();
   const tileView = getCityTileView(stop);
   const { tiles, mapTopLeft } = getTileLayout(tileView);
-  const popupVenue = hoveredVenue ? stop.venues.find((venue) => venue.name === hoveredVenue) ?? null : null;
+
+  // Measured map size (px) so pin-collision grouping tracks the rendered
+  // output at any viewport. Falls back to tile units before first measure.
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const [mapSize, setMapSize] = useState({ w: tileView.width, h: tileView.height });
+  useEffect(() => {
+    const el = mapRef.current;
+    if (!el) return;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) setMapSize({ w: rect.width, h: rect.height });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Fractional pin positions (0..1) from the true stored coordinates.
+  const pinFracs = stop.venues.map((venue, i) => {
+    const coords = venueCoord(stop, venue, i);
+    const world = lngLatToWorld(coords, tileView.zoom);
+    return {
+      x: (world.x - mapTopLeft.x) / tileView.width,
+      y: (world.y - mapTopLeft.y) / tileView.height,
+    };
+  });
+  // Presentation-only collision groups (coordinates untouched). Positions
+  // include the same static label offsets the pins render with, so grouping
+  // reflects actual on-screen overlap.
+  const pinPoints = stop.venues.map((venue, i) => {
+    const labelOffset = markerOffsets[venue.name] ?? { x: 0, y: 0 };
+    return {
+      key: venue.name,
+      x: pinFracs[i].x * mapSize.w + labelOffset.x,
+      y: pinFracs[i].y * mapSize.h + labelOffset.y,
+    };
+  });
+  const clusterGroups = absorbPinsUnderBadges(groupOverlappingPins(pinPoints, CLUSTER_PX), BADGE_CLEARANCE_PX);
+
+  // Open cluster chooser (venue name of the badge anchor -> group).
+  const [openCluster, setOpenCluster] = useState<string | null>(null);
+  const badgeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const chooserFirstRef = useRef<HTMLButtonElement | null>(null);
+  // Collapse the chooser when the event selection changes or the city changes.
+  useEffect(() => {
+    setOpenCluster(null);
+  }, [selectedEvent, stop.city]);
+  // Focus management: move into the chooser on open, back to the badge on close.
+  const prevOpenCluster = useRef<string | null>(null);
+  useEffect(() => {
+    if (openCluster && !prevOpenCluster.current) {
+      chooserFirstRef.current?.focus();
+    } else if (!openCluster && prevOpenCluster.current) {
+      badgeRefs.current[prevOpenCluster.current]?.focus();
+    }
+    prevOpenCluster.current = openCluster;
+  }, [openCluster ]);
+  const closeCluster = () => setOpenCluster(null);
+
+  const pinnedVenueObj = pinnedVenue ? stop.venues.find((venue) => venue.name === pinnedVenue) ?? null : null;
+  // A pinned venue hidden by the active event filter yields to the filter.
+  const effectivePinnedVenue =
+    pinnedVenueObj && (!selectedEvent || venueMatchesEvent(pinnedVenueObj, selectedEvent)) ? pinnedVenue : null;
+  const activeVenueName = resolveActiveVenue(pinnedVenue, effectivePinnedVenue !== null, hoveredVenue);
+  // While the pointer rests on the popup itself, hovering must not clear the
+  // preview underneath (the popup opens on top of its own pin, which would
+  // otherwise fire a spurious leave and instantly dismiss it — fatal on touch
+  // taps). relatedTarget covers event ordering; popupHovered covers the rest.
+  const [popupHovered, setPopupHovered] = useState(false);
+  const popupRef = useRef<HTMLDivElement | null>(null);
+  const leavingForPopup = (event: ReactMouseEvent | ReactFocusEvent) => {
+    const next = (event as ReactMouseEvent).relatedTarget;
+    return next instanceof Node && (popupRef.current?.contains(next) ?? false);
+  };
+  const popupVenue = activeVenueName ? stop.venues.find((venue) => venue.name === activeVenueName) ?? null : null;
   const popupEvent = hoveredEvent ?? selectedEvent;
   const popupEvents = popupVenue
     ? selectedEvent && venueMatchesEvent(popupVenue, selectedEvent)
@@ -373,8 +377,132 @@ function CityTileMap({
   const showPopupLocations =
     popupTitle.length > 0 && popupVenues.some((venue) => popupEvents.some((event) => venue.name.toLowerCase() !== event.toLowerCase()));
 
+  const openGroup = openCluster
+    ? clusterGroups.find((g) => g.length > 1 && g[0].key === openCluster) ?? null
+    : null;
+
+  const renderVenuePin = (venue: Venue, index: number) => {
+    const coords = venueCoord(stop, venue, index);
+    const pos = getCityMarkerPosition(coords, tileView, mapTopLeft);
+    const offset = markerOffsets[venue.name] ?? { x: 0, y: 0 };
+    const matchesSelection = venueMatchesEvent(venue, selectedEvent);
+    const matchesHoverEvent = Boolean(hoveredEvent && venueMatchesEvent(venue, hoveredEvent));
+    const matchesHoverVenue = hoveredVenue === venue.name || effectivePinnedVenue === venue.name;
+    const hasListHover = Boolean(hoveredEvent || hoveredVenue || effectivePinnedVenue);
+    const isSpotlit = matchesHoverEvent || matchesHoverVenue;
+    const hasFocusedVenueLabel = Boolean(selectedEvent || hoveredEvent || hoveredVenue);
+    const label = hasFocusedVenueLabel ? venue.name : venue.events?.join(' · ') ?? venue.name;
+
+    return (
+      <button
+        key={venue.name}
+        type="button"
+            aria-label={venue.name}
+            // Select on pointer-down rather than click: the popup opens
+            // synchronously on focus and would otherwise cover the pin before
+            // mouseup, silently swallowing the tap (touch) / click. Keyboard
+            // Enter/Space synthesizes click with detail 0 and toggles instead.
+            onPointerDown={() => onVenuePin(venue.name)}
+            onClick={(event) => {
+              if (event.detail === 0) onVenuePin(venue.name);
+            }}
+            onMouseEnter={() => onVenueHover(venue.name)}
+            onMouseLeave={(event) => {
+              if (!leavingForPopup(event) && !popupHovered) onVenueHover(null);
+            }}
+            onFocus={() => onVenueHover(venue.name)}
+            onBlur={(event) => {
+              if (!leavingForPopup(event) && !popupHovered) onVenueHover(null);
+            }}
+        className={`absolute z-10 transition-all duration-200 ${
+          isSpotlit
+            ? 'opacity-100'
+            : hasListHover
+              ? 'opacity-15'
+              : matchesSelection
+                ? 'opacity-55'
+                : 'opacity-10'
+        }`}
+        style={{
+          ...pos,
+          transform: `translate(calc(-50% + ${offset.x}px), calc(-100% + ${offset.y}px))`,
+        }}
+      >
+        <div className="group relative flex flex-col items-center">
+          <span
+            className={`grid place-items-center rounded-full border text-[11px] font-semibold transition-all duration-200 ${
+              isSpotlit
+                ? 'h-10 w-10 border-white bg-armah-red text-white shadow-[0_0_28px_rgba(251,54,64,0.85)] ring-4 ring-armah-red/30'
+                : venue.own
+                  ? 'h-8 w-8 border-white/75 bg-armah-red/80 text-white/80 ring-4 ring-armah-red/15'
+                  : matchesSelection
+                    ? 'h-8 w-8 border-white/70 bg-armah-red/75 text-white/80'
+                    : 'h-8 w-8 border-white/30 bg-armah-red/45 text-white/55'
+            }`}
+          >
+            {index + 1}
+          </span>
+          <span
+            className={`pointer-events-none absolute left-1/2 top-full z-10 mt-1 w-max max-w-[170px] -translate-x-1/2 rounded-full border border-white/15 bg-black/80 px-2.5 py-1 text-center text-[10px] font-medium leading-tight text-white/90 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 ${
+              isSpotlit ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            {venue.own && hasFocusedVenueLabel ? '★ ' : ''}
+            {label}
+            {hasFocusedVenueLabel && venue.count ? ` ×${venue.count}` : ''}
+            {venue.approx ? ` · ${t('map.approximate')}` : ''}
+          </span>
+        </div>
+      </button>
+    );
+  };
+
+  const renderClusterBadge = (group: { key: string; x: number; y: number }[]) => {
+    const anchorKey = group[0].key;
+    const members = stop.venues.filter((venue) => group.some((p) => p.key === venue.name));
+    const cx = group.reduce((sum, p) => sum + p.x, 0) / group.length / mapSize.w;
+    const cy = group.reduce((sum, p) => sum + p.y, 0) / group.length / mapSize.h;
+    const isOpen = openCluster === anchorKey;
+    const groupSpotlit = Boolean(hoveredEvent && members.some((venue) => venueMatchesEvent(venue, hoveredEvent)));
+    const names = members.map((venue) => venue.name);
+    return (
+      <button
+        key={`cluster-${anchorKey}`}
+        ref={(el) => {
+          badgeRefs.current[anchorKey] = el;
+        }}
+        type="button"
+        aria-label={`${names.length} ${t('map.clusterHint')}: ${names.join(', ')}`}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls={`cluster-chooser-${stop.city}`}
+        onClick={() => setOpenCluster(isOpen ? null : anchorKey)}
+        className={`absolute z-10 transition-all duration-200 ${groupSpotlit || isOpen ? 'opacity-100' : 'opacity-80'}`}
+        style={{
+          left: `${cx * 100}%`,
+          top: `${cy * 100}%`,
+          transform: 'translate(-50%, -100%)',
+        }}
+      >
+        <div className="group relative flex flex-col items-center">
+          <span
+            className={`grid h-9 min-w-9 place-items-center rounded-full border-2 border-white bg-armah-red px-1.5 text-[12px] font-bold text-white shadow-[0_0_28px_rgba(251,54,64,0.85)] ring-4 ring-armah-red/30 ${
+              isOpen ? 'scale-110' : ''
+            }`}
+          >
+            {names.length}
+          </span>
+          <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 w-max max-w-[170px] -translate-x-1/2 rounded-full border border-white/15 bg-black/80 px-2.5 py-1 text-center text-[10px] font-medium leading-tight text-white/90 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+            {names.join(' · ')}
+          </span>
+        </div>
+      </button>
+    );
+  };
+
   return (
     <div
+      ref={mapRef}
       className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#07100d] shadow-[0_18px_80px_rgba(0,0,0,0.45)]"
       style={{ aspectRatio: `${tileView.width} / ${tileView.height}` }}
     >
@@ -402,100 +530,139 @@ function CityTileMap({
 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_48%_44%,rgba(251,54,64,0.08),transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.3))]" />
 
-      <div className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/65 px-4 py-2 text-sm text-white/80 backdrop-blur-md">
-        {stop.city} · OpenStreetMap
+      <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] items-center gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label={`${t('map.back')}: ${stop.city}`}
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-white/15 bg-black/65 px-4 py-2 text-sm text-white/80 backdrop-blur-md transition-colors hover:border-armah-red/60 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          {t('map.back')}
+        </button>
+        <span className="truncate rounded-full border border-white/15 bg-black/65 px-4 py-2 text-sm text-white/80 backdrop-blur-md">
+          {stop.city} · OpenStreetMap
+        </span>
       </div>
 
       <AnimatePresence mode="wait">
         {popupTitle && (
           <motion.div
             key={`${popupTitle}-${popupVenues.map((venue) => venue.name).join('-')}`}
+            ref={popupRef}
             initial={{ opacity: 0, scale: 0.97, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -6 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute left-4 top-20 z-20 max-w-[290px] rounded-2xl border border-white/15 bg-black/80 px-4 py-3 text-left shadow-[0_16px_45px_rgba(0,0,0,0.45)] backdrop-blur-md"
+            onMouseEnter={() => setPopupHovered(true)}
+            onMouseLeave={() => {
+              setPopupHovered(false);
+              onVenueHover(null);
+            }}
+            // History text passes taps/clicks through to whatever is beneath
+            // (usually its own pin, toggling it back off); only the scrollable
+            // history list itself captures touch for scrolling.
+            className="pointer-events-none absolute left-4 top-20 z-20 flex max-h-[75%] w-auto max-w-[290px] flex-col overflow-hidden rounded-2xl border border-white/15 bg-black/80 px-4 py-3 text-left shadow-[0_16px_45px_rgba(0,0,0,0.45)] backdrop-blur-md"
           >
-            <p className="text-[10px] uppercase tracking-[0.22em] text-armah-red">Event</p>
-            <p className="mt-1 text-sm font-semibold leading-5 text-white">{popupTitle}</p>
-            {showPopupLocations && (
-              <p className="mt-2 text-xs leading-5 text-white/45">
-                {popupVenues.map(formatVenueLocation).join(' · ')}
-              </p>
-            )}
+            <div className="shrink-0">
+              <p className="text-[10px] uppercase tracking-[0.22em] text-armah-red">Event</p>
+              <p className="mt-1 text-sm font-semibold leading-5 text-white">{popupTitle}</p>
+              {showPopupLocations && (
+                <p className="mt-2 text-xs leading-5 text-white/65">
+                  {popupVenues.map(venue => formatVenueLocation(venue, t('map.approximate'))).join(' · ')}
+                </p>
+              )}
+            </div>
+            <div className="pointer-events-auto min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain">
+            {popupVenues.flatMap(venue => (venue.history ?? [])
+              .filter(record => popupEvents.includes(record.event))
+              .map(record => {
+                const dateLine = publicDateLine(record);
+                return (
+                <div key={record.id} className="mt-2 border-t border-white/10 pt-2 text-xs leading-5 text-white/80">
+                  {dateLine && <p>{dateLine}</p>}
+                  <p>{historyLabel(record.event, record.venueDetail ?? venue.name)}</p>
+                  <p>{record.relationshipType === 'RECURRING_DJ_ENGAGEMENT' ? 'Recurring DJ Engagement' : 'DJ'}</p>
+                  {record.projectRole && <p>Co-Founder / Own Event</p>}
+                  {record.stopLabel && <p>{record.stopLabel}</p>}
+                </div>
+                );
+              }))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {stop.venues.map((venue, index) => {
-        const coords = venueCoord(stop, venue, index);
-        const pos = getCityMarkerPosition(coords, tileView, mapTopLeft);
-        const offset = markerOffsets[venue.name] ?? { x: 0, y: 0 };
-        const matchesSelection = venueMatchesEvent(venue, selectedEvent);
-        const matchesHoverEvent = Boolean(hoveredEvent && venueMatchesEvent(venue, hoveredEvent));
-        const matchesHoverVenue = hoveredVenue === venue.name;
-        const hasListHover = Boolean(hoveredEvent || hoveredVenue);
-        const isSpotlit = matchesHoverEvent || matchesHoverVenue;
-        const hasFocusedVenueLabel = Boolean(selectedEvent || hoveredEvent || hoveredVenue);
-        const label = hasFocusedVenueLabel ? venue.name : venue.events?.join(' · ') ?? venue.name;
+      {clusterGroups.map((group) => {
+        if (group.length === 1) {
+          const venue = stop.venues.find((v) => v.name === group[0].key)!;
+          return renderVenuePin(venue, stop.venues.indexOf(venue));
+        }
+        return renderClusterBadge(group);
+      })}
 
+      {openGroup && (
+        <button
+          type="button"
+          aria-label={t('map.close')}
+          tabIndex={-1}
+          className="absolute inset-0 z-20 cursor-default bg-transparent"
+          onClick={closeCluster}
+        />
+      )}
+      {openGroup && (() => {
+        const members = stop.venues.filter((venue) => openGroup.some((p) => p.key === venue.name));
+        const cx = openGroup.reduce((sum, p) => sum + p.x, 0) / openGroup.length / mapSize.w;
+        const cy = openGroup.reduce((sum, p) => sum + p.y, 0) / openGroup.length / mapSize.h;
+        const openBelow = cy < 0.45;
         return (
           <div
-            key={venue.name}
-            role="button"
-            tabIndex={0}
-            onMouseEnter={() => onVenueHover(venue.name)}
-            onMouseLeave={() => onVenueHover(null)}
-            onFocus={() => onVenueHover(venue.name)}
-            onBlur={() => onVenueHover(null)}
-            className={`absolute z-10 transition-all duration-200 ${
-              isSpotlit
-                ? 'opacity-100'
-                : hasListHover
-                  ? 'opacity-15'
-                  : matchesSelection
-                    ? 'opacity-55'
-                    : 'opacity-10'
-            }`}
+            id={`cluster-chooser-${stop.city}`}
+            role="dialog"
+            aria-label={`${t('map.chooseVenue')}: ${members.map((venue) => venue.name).join(', ')}`}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.stopPropagation();
+                closeCluster();
+              }
+            }}
+            className="absolute z-30 w-[220px] max-w-[70%] rounded-2xl border border-white/15 bg-black/95 p-2 shadow-[0_18px_70px_rgba(0,0,0,0.7)] backdrop-blur-md"
             style={{
-              ...pos,
-              transform: `translate(calc(-50% + ${offset.x}px), calc(-100% + ${offset.y}px))`,
+              left: `${Math.min(Math.max(cx, 0.2), 0.8) * 100}%`,
+              top: `${cy * 100}%`,
+              transform: openBelow ? 'translate(-50%, 12px)' : 'translate(-50%, calc(-100% - 12px))',
+              maxHeight: '60%',
+              overflowY: 'auto',
             }}
           >
-            <div className="group relative flex flex-col items-center">
-              <span
-                className={`grid place-items-center rounded-full border text-[11px] font-semibold transition-all duration-200 ${
-                  isSpotlit
-                    ? 'h-10 w-10 border-white bg-armah-red text-white shadow-[0_0_28px_rgba(251,54,64,0.85)] ring-4 ring-armah-red/30'
-                    : venue.own
-                      ? 'h-8 w-8 border-white/75 bg-armah-red/80 text-white/80 ring-4 ring-armah-red/15'
-                      : matchesSelection
-                        ? 'h-8 w-8 border-white/70 bg-armah-red/75 text-white/80'
-                        : 'h-8 w-8 border-white/30 bg-armah-red/45 text-white/55'
-                }`}
+            <p className="px-2 pb-1 pt-1 text-[10px] uppercase tracking-[0.22em] text-armah-red">{t('map.chooseVenue')}</p>
+            {members.map((venue, i) => (
+              <button
+                key={venue.name}
+                ref={i === 0 ? chooserFirstRef : undefined}
+                type="button"
+                onClick={() => {
+                  onVenuePin(venue.name);
+                  closeCluster();
+                }}
+                className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-sm text-white/85 transition-colors hover:border-armah-red/65 hover:text-white"
               >
-                {index + 1}
-              </span>
-              <span
-                className={`pointer-events-none mt-1 max-w-[170px] rounded-full border border-white/15 bg-black/80 px-2.5 py-1 text-center text-[10px] font-medium leading-tight text-white/90 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 ${
-                  isSpotlit ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                {venue.own && hasFocusedVenueLabel ? '★ ' : ''}
-                {label}
-                {hasFocusedVenueLabel && venue.count ? ` ×${venue.count}` : ''}
-                {venue.approx ? ' · approx.' : ''}
-              </span>
-            </div>
+                <span className="font-medium">{venue.name}</span>
+                <span className="shrink-0 text-[11px] text-white/50">
+                  {venue.count ? `×${venue.count}` : ''}
+                  {venue.approx ? ` · ${t('map.approximate')}` : ''}
+                </span>
+              </button>
+            ))}
           </div>
         );
-      })}
+      })()}
 
       <a
         href="https://www.openstreetmap.org/copyright"
         target="_blank"
         rel="noopener noreferrer"
-        className="absolute bottom-2 right-3 rounded bg-black/65 px-2 py-1 text-[10px] text-white/45 hover:text-white/80"
+        className="absolute bottom-2 right-3 rounded bg-black/65 px-2 py-1 text-[10px] text-white/65 hover:text-white/80"
       >
         © OpenStreetMap
       </a>
@@ -543,7 +710,16 @@ export default function Trusted(): JSX.Element {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
   const [hoveredVenue, setHoveredVenue] = useState<string | null>(null);
+  // Explicit tap/click selection ("pinned"). Unlike hover previews, a pinned
+  // venue survives the spurious pointer-leave that fires when its own popup
+  // opens on top of it (touch taps and covered pins). Toggle off by tapping
+  // the same pin again; cleared by filter/city navigation.
+  const [pinnedVenue, setPinnedVenue] = useState<string | null>(null);
+  const togglePinnedVenue = (venue: string) => {
+    setPinnedVenue((current) => (current === venue ? null : venue));
+  };
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+  const panelTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [view, setView] = useState<{ center: [number, number]; zoom: number }>({
     center: NATIONAL_CENTER,
     zoom: NATIONAL_ZOOM,
@@ -578,14 +754,6 @@ export default function Trusted(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    preloadMapJson(WORLD_GEO);
-    preloadMapJson(GERMANY_GEO);
-    STOPS.forEach((stop) => {
-      void preloadCityTiles(stop);
-    });
-  }, []);
-
-  useEffect(() => {
     if (mapLevel === 'world') {
       setMobilePanelOpen(false);
     }
@@ -593,12 +761,11 @@ export default function Trusted(): JSX.Element {
 
   function openCountry() {
     setMobilePanelOpen(false);
-    preloadMapJson(GERMANY_GEO);
-    void Promise.all(STOPS.map(preloadCityTiles));
     setActiveCity(null);
     setSelectedEvent(null);
     setHoveredEvent(null);
     setHoveredVenue(null);
+    setPinnedVenue(null);
     animateTo(NATIONAL_CENTER, NATIONAL_ZOOM);
     setMapLevel('country');
   }
@@ -606,11 +773,11 @@ export default function Trusted(): JSX.Element {
     const s = STOPS.find((x) => x.city === city);
     if (!s) return;
     setMobilePanelOpen(false);
-    void preloadCityTiles(s);
     setActiveCity(city);
     setSelectedEvent(null);
     setHoveredEvent(null);
     setHoveredVenue(null);
+    setPinnedVenue(null);
     animateTo(s.coords, COUNTRY_TO_CITY_ZOOM);
     setMapLevel('city');
   }
@@ -621,6 +788,7 @@ export default function Trusted(): JSX.Element {
     setSelectedEvent(null);
     setHoveredEvent(null);
     setHoveredVenue(null);
+    setPinnedVenue(null);
     animateTo(NATIONAL_CENTER, NATIONAL_ZOOM);
   }
   function resetToCountry() {
@@ -630,6 +798,7 @@ export default function Trusted(): JSX.Element {
     setSelectedEvent(null);
     setHoveredEvent(null);
     setHoveredVenue(null);
+    setPinnedVenue(null);
     animateTo(NATIONAL_CENTER, NATIONAL_ZOOM);
   }
 
@@ -637,6 +806,7 @@ export default function Trusted(): JSX.Element {
     setSelectedEvent(event);
     setHoveredEvent(null);
     setHoveredVenue(null);
+    setPinnedVenue(null);
     if (closeAfterSelect) setMobilePanelOpen(false);
   }
 
@@ -648,17 +818,17 @@ export default function Trusted(): JSX.Element {
           onClick={openCountry}
           className={`group block w-full text-left cursor-pointer ${mobile ? '' : 'border-l border-armah-red/80 pl-5'}`}
         >
-          <span className="text-white/35 text-[11px] uppercase tracking-[0.22em]">Tour-Region</span>
+          <span className="text-white/65 text-[11px] uppercase tracking-[0.22em]">{t('map.history')}</span>
           <div className="mt-3">
             <h3 className="font-head text-2xl md:text-3xl text-white uppercase tracking-wide group-hover:text-armah-red transition-colors duration-200">
-              Deutschland
+              {t('map.country')}
             </h3>
             <span className="mt-2 inline-flex rounded-full border border-armah-red/35 bg-armah-red/10 px-3 py-1 text-xs font-medium text-armah-red">
               Hamburg · Berlin
             </span>
           </div>
-          <span className="mt-4 inline-block text-white/40 text-xs group-hover:text-armah-red transition-colors">
-            Deutschland öffnen →
+          <span className="mt-4 inline-block text-white/65 text-xs group-hover:text-armah-red transition-colors">
+            {t('map.openCountry')}
           </span>
         </button>
       );
@@ -667,7 +837,7 @@ export default function Trusted(): JSX.Element {
     if (mapLevel === 'country' || !activeStop) {
       return (
         <div className={`space-y-4 ${mobile ? '' : 'border-l border-armah-red/80 pl-5'}`}>
-          <span className="text-white/35 text-[11px] uppercase tracking-[0.22em]">Deutschland</span>
+          <span className="text-white/65 text-[11px] uppercase tracking-[0.22em]">{t('map.country')}</span>
           {STOPS.map((stop) => (
             <button
               key={stop.city}
@@ -680,14 +850,14 @@ export default function Trusted(): JSX.Element {
                   {stop.city}
                 </h3>
                 <span className="text-armah-red text-xs font-medium">
-                  {cityEvents(stop).length} Events · {stop.venues.length} Locations
+                  {cityEvents(stop).length} {t('map.events')} · {stop.venues.length} {t('map.venues')}
                 </span>
               </div>
-              <p className="mt-2 max-w-sm text-xs leading-5 text-white/42">
+              <p className="mt-2 max-w-sm text-xs leading-5 text-white/65">
                 {cityEvents(stop).join(' · ')}
               </p>
-              <span className="mt-2 inline-block text-white/40 text-xs group-hover:text-armah-red transition-colors">
-                Stadt-Historie öffnen →
+              <span className="mt-2 inline-block text-white/65 text-xs group-hover:text-armah-red transition-colors">
+                {t('map.openCity')}
               </span>
             </button>
           ))}
@@ -702,16 +872,16 @@ export default function Trusted(): JSX.Element {
           onClick={resetToCountry}
           className="mb-4 inline-flex items-center gap-2 text-white/50 hover:text-armah-red text-sm transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Zurück zur Deutschlandkarte
+          <ArrowLeft className="w-4 h-4" /> {t('map.back')}
         </button>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h3 className="font-head text-2xl md:text-3xl text-white uppercase tracking-wide">{activeStop.city}</h3>
           <span className="text-armah-red text-xs font-medium">
-            {activeEvents.length} Events · {activeStop.venues.length} Locations
+            {activeEvents.length} {t('map.events')} · {activeStop.venues.length} {t('map.venues')}
           </span>
         </div>
         <div className="mt-4">
-          <span className="text-white/35 text-[11px] uppercase tracking-[0.22em]">Event wählen</span>
+          <span className="text-white/65 text-[11px] uppercase tracking-[0.22em]">{t('map.chooseEvent')}</span>
           <div className="mt-3 space-y-2">
             <button
               type="button"
@@ -722,7 +892,7 @@ export default function Trusted(): JSX.Element {
                   : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-armah-red/50 hover:text-white'
               }`}
             >
-              Alle Events
+              {t('map.allEvents')}
             </button>
             {activeEvents.map((event) => (
               <button
@@ -748,9 +918,9 @@ export default function Trusted(): JSX.Element {
               href={URL_BY_NAME[selectedEvent]}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-block text-xs text-white/40 transition-colors hover:text-armah-red"
+              className="mt-3 inline-block text-xs text-white/65 transition-colors hover:text-armah-red"
             >
-              Event auf Instagram öffnen →
+              {t('map.instagram')}
             </a>
           )}
         </div>
@@ -760,10 +930,10 @@ export default function Trusted(): JSX.Element {
 
   const mobilePanelLabel =
     mapLevel === 'city' && activeStop
-      ? `${activeStop.city} · Events wählen`
+      ? `${activeStop.city} · ${t('map.chooseEvent')}`
       : mapLevel === 'country'
-        ? 'Deutschland · Städte wählen'
-        : 'Tour-Region · Deutschland';
+        ? `${t('map.country')} · ${t('map.chooseCity')}`
+        : `${t('map.history')} · ${t('map.country')}`;
   const z = view.zoom;
 
   return (
@@ -778,14 +948,14 @@ export default function Trusted(): JSX.Element {
         </Reveal>
         <Reveal delay={0.05} className="text-center mb-12">
           <p className="text-white/50 text-sm md:text-base tracking-wide">
-            Weltweit gesehen: bisher gebuchte DJ-Stopps in Deutschland
+            {t('trusted.subtitle')}
           </p>
         </Reveal>
 
         {/* Logo carousel */}
-        <div className="max-w-4xl mx-auto mb-10 md:mb-16 relative">
+        <div className="max-w-4xl mx-auto mb-4 md:mb-6 relative">
           <div
-            className="w-full h-28 flex items-center justify-center overflow-hidden relative"
+            className="w-full h-20 flex items-center justify-center overflow-hidden relative"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -798,24 +968,51 @@ export default function Trusted(): JSX.Element {
                 }`}
                 style={{ width: '220px', height: '80px' }}
               >
-                <img src={h.logo} alt={h.name} className="h-full w-auto mx-auto object-contain" draggable={false} />
+                <ResponsiveImage image={h.logo} alt={h.name} sizes="220px" className="h-full w-full mx-auto object-contain" draggable={false} />
               </div>
             ))}
             <button
               aria-label={t('trusted.prev')}
               onClick={prev}
-              className="absolute top-1/2 -translate-y-1/2 left-0 md:left-14 z-50 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
+              className="absolute top-1/2 -translate-y-1/2 left-0 md:left-14 z-50 w-11 h-11 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
             >
               ‹
             </button>
             <button
               aria-label={t('trusted.next')}
               onClick={next}
-              className="absolute top-1/2 -translate-y-1/2 right-0 md:right-14 z-50 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
+              className="absolute top-1/2 -translate-y-1/2 right-0 md:right-14 z-50 w-11 h-11 md:w-14 md:h-14 flex items-center justify-center rounded-full cursor-pointer text-white bg-black/40 hover:bg-black/60 focus:outline-none"
             >
               ›
             </button>
           </div>
+        </div>
+
+        <div className="repeat-editorial mx-auto mb-12 max-w-6xl px-5 py-6 sm:px-7 md:px-9">
+          <h3 className="repeat-kicker text-xs font-semibold uppercase tracking-[0.2em]">{t('trusted.repeat')}</h3>
+          {/* One horizontal editorial row on every viewport: four columns on
+              desktop, a swipeable overflow row on mobile (never 2×2, never
+              unreadably shrunk). Counts derive from the Career Map history
+              via homepageRelationships — no second dataset. */}
+          <div className="relative">
+            <div tabIndex={0} role="region" aria-label={t('trusted.repeat')} className="overflow-x-auto scrollbar-hide">
+            <ul className="mt-4 flex w-max min-w-full snap-x snap-mandatory gap-0 border-y lg:grid lg:w-auto lg:grid-cols-4 lg:snap-none lg:overflow-visible">
+              {homepageRelationships.map((booking) => (
+                <li key={booking.id} className="repeat-item flex min-h-24 w-[248px] shrink-0 snap-start items-end justify-between gap-4 border-r px-5 py-5 last:border-r-0 sm:w-[300px] lg:w-auto lg:px-5 lg:py-5">
+                  <div className="min-w-0">
+                    <p className="repeat-kicker text-[10px] font-semibold uppercase tracking-[0.2em]">
+                      {booking.relationship === 'venue' ? t('trusted.venueRelationship') : t('trusted.brandRelationship')}
+                    </p>
+                    <h4 className="repeat-name mt-2 font-head text-3xl uppercase leading-none sm:text-4xl">{booking.name}</h4>
+                  </div>
+                  <span className="repeat-count text-sm font-semibold tracking-wide">×{booking.count}</span>
+                </li>
+              ))}
+            </ul>
+            </div>
+            <div aria-hidden="true" className="repeat-fade pointer-events-none absolute inset-y-0 right-0 w-14 lg:hidden" />
+          </div>
+          <a href="#booking" className="repeat-name mt-4 inline-flex min-h-11 items-center text-sm underline underline-offset-4 hover:text-armah-red">{t('mixes.booking')}</a>
         </div>
 
         {/* Map + event list */}
@@ -854,12 +1051,15 @@ export default function Trusted(): JSX.Element {
                   className="col-start-1 row-start-1 w-full"
                 >
                   <div className="w-full">
-                    <CityTileMap
+                      <CityTileMap
                       stop={activeStop}
                       selectedEvent={selectedEvent}
                       hoveredEvent={hoveredEvent}
                       hoveredVenue={hoveredVenue}
+                      pinnedVenue={pinnedVenue}
                       onVenueHover={setHoveredVenue}
+                      onVenuePin={togglePinnedVenue}
+                      onBack={resetToCountry}
                     />
                   </div>
                 </motion.div>
@@ -878,7 +1078,7 @@ export default function Trusted(): JSX.Element {
                     className="absolute z-10 top-2 left-2 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-black/60 backdrop-blur-sm text-white/80 hover:text-white hover:border-armah-red/60 text-sm transition-colors duration-200"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    Welt
+                    {t('map.world')}
                   </button>
                   <ComposableMap
                     projection="geoMercator"
@@ -891,7 +1091,7 @@ export default function Trusted(): JSX.Element {
                       <Geographies geography={GERMANY_GEO}>
                         {({ geographies }: { geographies: any[] }) =>
                           geographies.map((geo) => (
-                            <Geography
+                            <Geography tabIndex={-1}
                               key={geo.rsmKey}
                               geography={geo}
                               fill="rgba(255,255,255,0.045)"
@@ -909,7 +1109,8 @@ export default function Trusted(): JSX.Element {
 
                       {/* National → city pins */}
                       {STOPS.map((stop) => (
-                        <Marker key={stop.city} coordinates={stop.coords} onClick={() => openCity(stop.city)} style={{ default: { cursor: 'pointer' } }}>
+                        <Marker key={stop.city} coordinates={stop.coords} role="button" tabIndex={0} aria-label={stop.city}
+                          onKeyDown={(event: React.KeyboardEvent<SVGElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCity(stop.city); } }} onClick={() => openCity(stop.city)} style={{ default: { cursor: 'pointer' } }}>
                           {!reduce && (
                             <motion.circle
                               r={6 / z}
@@ -935,11 +1136,11 @@ export default function Trusted(): JSX.Element {
             <div className="mt-4 flex items-center justify-center gap-6 text-xs text-white/50">
               <span className="inline-flex items-center gap-2">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-armah-red ring-2 ring-armah-red/40" />
-                Eigene Veranstaltung
+                {t('map.own')}
               </span>
               <span className="inline-flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-armah-red" />
-                Gastauftritt
+                {t('map.guest')}
               </span>
             </div>
           </Reveal>
@@ -953,21 +1154,23 @@ export default function Trusted(): JSX.Element {
 
           {showMobileMapDetails && (
             <div className="lg:hidden">
-              <div
-                className="relative z-30"
-                onMouseEnter={() => setMobilePanelOpen(true)}
-                onMouseLeave={() => setMobilePanelOpen(false)}
-              >
+              <div className="relative z-30">
                 <button
+                  ref={panelTriggerRef}
                   type="button"
                   onClick={() => setMobilePanelOpen((open) => !open)}
-                  onFocus={() => setMobilePanelOpen(true)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape' && mobilePanelOpen) {
+                      event.stopPropagation();
+                      setMobilePanelOpen(false);
+                    }
+                  }}
                   className="flex w-full items-center justify-between rounded-full border border-armah-red/35 bg-black/75 px-4 py-3 text-left text-sm text-white/85 shadow-[0_12px_35px_rgba(0,0,0,0.45)] backdrop-blur transition-colors hover:border-armah-red/65"
                   aria-expanded={mobilePanelOpen}
                 >
                   <span className="font-medium">{mobilePanelLabel}</span>
                   <span className="text-xs uppercase tracking-[0.16em] text-armah-red">
-                    {mobilePanelOpen ? 'Schließen' : 'Details'}
+                    {mobilePanelOpen ? t('map.close') : t('map.details')}
                   </span>
                 </button>
 
@@ -978,6 +1181,13 @@ export default function Trusted(): JSX.Element {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.18, ease: 'easeOut' }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') {
+                          event.stopPropagation();
+                          setMobilePanelOpen(false);
+                          panelTriggerRef.current?.focus();
+                        }
+                      }}
                       className="absolute bottom-full left-0 right-0 z-40 mb-3 max-h-[62vh] overflow-y-auto rounded-3xl border border-white/10 bg-black/95 p-5 shadow-[0_18px_70px_rgba(0,0,0,0.7)] backdrop-blur-md"
                     >
                       {renderMapDetailsPanel(true)}
@@ -992,7 +1202,7 @@ export default function Trusted(): JSX.Element {
         {showMobileMapDetails && mobilePanelOpen && (
           <button
             type="button"
-            aria-label="Popover schließen"
+            aria-label={t('map.close')}
             className="fixed inset-0 z-20 bg-transparent lg:hidden"
             onClick={() => setMobilePanelOpen(false)}
             tabIndex={-1}

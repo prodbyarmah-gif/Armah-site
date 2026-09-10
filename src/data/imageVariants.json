@@ -1,0 +1,398 @@
+{
+  "hero": {
+    "src": "/assets/media/press/hero-1280.webp",
+    "width": 1280,
+    "height": 720,
+    "bytes": 27820,
+    "original": "public/assets/hero-bg.jpg",
+    "originalBytes": 221556,
+    "variants": [
+      {
+        "src": "/assets/media/press/hero-640.webp",
+        "width": 640,
+        "height": 360,
+        "bytes": 9770
+      },
+      {
+        "src": "/assets/media/press/hero-1280.webp",
+        "width": 1280,
+        "height": 720,
+        "bytes": 27820
+      }
+    ]
+  },
+  "portrait": {
+    "src": "/assets/media/press/portrait-1200.webp",
+    "width": 1200,
+    "height": 1600,
+    "bytes": 167320,
+    "original": "public/assets/bio-main.jpg",
+    "originalBytes": 785273,
+    "variants": [
+      {
+        "src": "/assets/media/press/portrait-600.webp",
+        "width": 600,
+        "height": 800,
+        "bytes": 57888
+      },
+      {
+        "src": "/assets/media/press/portrait-1200.webp",
+        "width": 1200,
+        "height": 1600,
+        "bytes": 167320
+      }
+    ]
+  },
+  "live01": {
+    "src": "/assets/media/live/live01-840.webp",
+    "width": 840,
+    "height": 1493,
+    "bytes": 39590,
+    "original": "public/assets/live01.jpg",
+    "originalBytes": 97383,
+    "variants": [
+      {
+        "src": "/assets/media/live/live01-240.webp",
+        "width": 240,
+        "height": 427,
+        "bytes": 9092
+      },
+      {
+        "src": "/assets/media/live/live01-840.webp",
+        "width": 840,
+        "height": 1493,
+        "bytes": 39590
+      }
+    ]
+  },
+  "live02": {
+    "src": "/assets/media/live/live02-840.webp",
+    "width": 840,
+    "height": 1493,
+    "bytes": 166288,
+    "original": "public/assets/live02.jpg",
+    "originalBytes": 352285,
+    "variants": [
+      {
+        "src": "/assets/media/live/live02-240.webp",
+        "width": 240,
+        "height": 427,
+        "bytes": 23672
+      },
+      {
+        "src": "/assets/media/live/live02-840.webp",
+        "width": 840,
+        "height": 1493,
+        "bytes": 166288
+      }
+    ]
+  },
+  "live03": {
+    "src": "/assets/media/live/live03-840.webp",
+    "width": 840,
+    "height": 1493,
+    "bytes": 135212,
+    "original": "public/assets/live03.jpg",
+    "originalBytes": 312438,
+    "variants": [
+      {
+        "src": "/assets/media/live/live03-240.webp",
+        "width": 240,
+        "height": 427,
+        "bytes": 23218
+      },
+      {
+        "src": "/assets/media/live/live03-840.webp",
+        "width": 840,
+        "height": 1493,
+        "bytes": 135212
+      }
+    ]
+  },
+  "live04": {
+    "src": "/assets/media/live/live04-840.webp",
+    "width": 840,
+    "height": 1493,
+    "bytes": 54556,
+    "original": "public/assets/live04.jpg",
+    "originalBytes": 143637,
+    "variants": [
+      {
+        "src": "/assets/media/live/live04-240.webp",
+        "width": 240,
+        "height": 427,
+        "bytes": 13252
+      },
+      {
+        "src": "/assets/media/live/live04-840.webp",
+        "width": 840,
+        "height": 1493,
+        "bytes": 54556
+      }
+    ]
+  },
+  "venue-afroslot": {
+    "src": "/assets/media/venues/venue-afroslot-660.webp",
+    "width": 360,
+    "height": 240,
+    "bytes": 13414,
+    "original": "public/assets/logos/Afroslot.png",
+    "originalBytes": 2176315,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-afroslot-440.webp",
+        "width": 240,
+        "height": 160,
+        "bytes": 7762
+      },
+      {
+        "src": "/assets/media/venues/venue-afroslot-660.webp",
+        "width": 360,
+        "height": 240,
+        "bytes": 13414
+      }
+    ]
+  },
+  "venue-amahh": {
+    "src": "/assets/media/venues/venue-amahh-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 13334,
+    "original": "public/assets/logos/Amahh.png",
+    "originalBytes": 1488383,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-amahh-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 7314
+      },
+      {
+        "src": "/assets/media/venues/venue-amahh-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 13334
+      }
+    ]
+  },
+  "venue-bricks": {
+    "src": "/assets/media/venues/venue-bricks-660.webp",
+    "width": 360,
+    "height": 240,
+    "bytes": 2782,
+    "original": "public/assets/logos/Bricks.png",
+    "originalBytes": 2071418,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-bricks-440.webp",
+        "width": 240,
+        "height": 160,
+        "bytes": 1646
+      },
+      {
+        "src": "/assets/media/venues/venue-bricks-660.webp",
+        "width": 360,
+        "height": 240,
+        "bytes": 2782
+      }
+    ]
+  },
+  "venue-l-atilier": {
+    "src": "/assets/media/venues/venue-l-atilier-660.webp",
+    "width": 360,
+    "height": 240,
+    "bytes": 6212,
+    "original": "public/assets/logos/L'atilier.png",
+    "originalBytes": 2091730,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-l-atilier-440.webp",
+        "width": 240,
+        "height": 160,
+        "bytes": 3838
+      },
+      {
+        "src": "/assets/media/venues/venue-l-atilier-660.webp",
+        "width": 360,
+        "height": 240,
+        "bytes": 6212
+      }
+    ]
+  },
+  "venue-enchanted": {
+    "src": "/assets/media/venues/venue-enchanted-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 6288,
+    "original": "public/assets/logos/enchanted.png",
+    "originalBytes": 1412004,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-enchanted-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 3528
+      },
+      {
+        "src": "/assets/media/venues/venue-enchanted-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 6288
+      }
+    ]
+  },
+  "venue-footlocker": {
+    "src": "/assets/media/venues/venue-footlocker-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 3880,
+    "original": "public/assets/logos/footlocker.png",
+    "originalBytes": 1361044,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-footlocker-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 2452
+      },
+      {
+        "src": "/assets/media/venues/venue-footlocker-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 3880
+      }
+    ]
+  },
+  "venue-golden-cut": {
+    "src": "/assets/media/venues/venue-golden-cut-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 5624,
+    "original": "public/assets/logos/golden cut.png",
+    "originalBytes": 1385831,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-golden-cut-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 3290
+      },
+      {
+        "src": "/assets/media/venues/venue-golden-cut-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 5624
+      }
+    ]
+  },
+  "venue-p-montana": {
+    "src": "/assets/media/venues/venue-p-montana-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 20942,
+    "original": "public/assets/logos/p montana.png",
+    "originalBytes": 1507038,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-p-montana-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 11230
+      },
+      {
+        "src": "/assets/media/venues/venue-p-montana-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 20942
+      }
+    ]
+  },
+  "venue-queens-and-clouds": {
+    "src": "/assets/media/venues/venue-queens-and-clouds-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 10154,
+    "original": "public/assets/logos/queens and clouds.png",
+    "originalBytes": 1422161,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-queens-and-clouds-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 6016
+      },
+      {
+        "src": "/assets/media/venues/venue-queens-and-clouds-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 10154
+      }
+    ]
+  },
+  "venue-roots": {
+    "src": "/assets/media/venues/venue-roots-660.webp",
+    "width": 360,
+    "height": 240,
+    "bytes": 7914,
+    "original": "public/assets/logos/roots.png",
+    "originalBytes": 2124091,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-roots-440.webp",
+        "width": 240,
+        "height": 160,
+        "bytes": 4680
+      },
+      {
+        "src": "/assets/media/venues/venue-roots-660.webp",
+        "width": 360,
+        "height": 240,
+        "bytes": 7914
+      }
+    ]
+  },
+  "venue-we-outside": {
+    "src": "/assets/media/venues/venue-we-outside-660.webp",
+    "width": 240,
+    "height": 240,
+    "bytes": 7996,
+    "original": "public/assets/logos/we outside.png",
+    "originalBytes": 1026614,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-we-outside-440.webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 4518
+      },
+      {
+        "src": "/assets/media/venues/venue-we-outside-660.webp",
+        "width": 240,
+        "height": 240,
+        "bytes": 7996
+      }
+    ]
+  },
+  "venue-yoto": {
+    "src": "/assets/media/venues/venue-yoto-660.webp",
+    "width": 360,
+    "height": 240,
+    "bytes": 5756,
+    "original": "public/assets/logos/yoto.png",
+    "originalBytes": 2077404,
+    "variants": [
+      {
+        "src": "/assets/media/venues/venue-yoto-440.webp",
+        "width": 240,
+        "height": 160,
+        "bytes": 3398
+      },
+      {
+        "src": "/assets/media/venues/venue-yoto-660.webp",
+        "width": 360,
+        "height": 240,
+        "bytes": 5756
+      }
+    ]
+  }
+}

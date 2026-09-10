@@ -1,49 +1,16 @@
 import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ExternalLink, Music, Play } from 'lucide-react';
+import { AlertTriangle, ExternalLink, Music } from 'lucide-react';
+import ResponsiveImage from './ResponsiveImage';
+import { photographyPreview } from '../data/photographyPreview';
+import { producerReleases } from '../data/releases';
 
-import WaveSurfer from 'wavesurfer.js';
+import type WaveSurfer from 'wavesurfer.js';
 
 type WaveInstance = ReturnType<typeof WaveSurfer.create>;
 
 
 
-
-// Self-contained Spotify links (no dependency on ../data/armah)
-type ProducerTrack = { id: string; title: string; artists: string; url: string };
-
-const producerTracks: ProducerTrack[] = [
-  {
-    id: 'T005',
-    title: 'German Borga',
-    artists: 'Stephen Jounior',
-    url: 'https://open.spotify.com/intl-de/track/1h3huetUjM2E6ccNs84rF3?si=1c4df676167f4aca',
-  },
-  {
-    id: 'T001',
-    title: 'Comeback Season',
-    artists: 'Stephen Jounior',
-    url: 'https://open.spotify.com/intl-de/track/4OHgaDZPsAemSCikAgFKqr?si=ed4505e96e144fae',
-  },
-  {
-    id: 'T002',
-    title: 'Break From Germany',
-    artists: 'Stephen Jounior, Yima Malik',
-    url: 'https://open.spotify.com/intl-de/track/38ZFS6DGwTP6BL0mEVUEdI?si=88feede361974aee',
-  },
-  {
-    id: 'T003',
-    title: 'Bundesliga',
-    artists: 'Stephen Jounior, NK3',
-    url: 'https://open.spotify.com/intl-de/track/3Mf5jsUc30w9PAfrM5LWvK?si=c5b2f6818b364c7d',
-  },
-  {
-    id: 'T004',
-    title: 'Berlin Wall',
-    artists: 'Stephen Jounior, YXNGBOIQ, Yima Malik',
-    url: 'https://open.spotify.com/intl-de/track/4SrqKPTiHd2BQXntPMiz5a?si=3acd362682874731',
-  },
-];
 
 export type BeatMood = 'Afro' | 'Drill' | 'Trap';
 
@@ -146,6 +113,13 @@ export const beatCatalog: Beat[] = [
   },
 ];
 
+/** One source of truth for the existing catalog's intentional mood groupings. */
+export const beatCatalogByMood: Record<BeatMood, readonly Beat[]> = {
+  Afro: beatCatalog.filter((beat) => beat.mood === 'Afro'),
+  Drill: beatCatalog.filter((beat) => beat.mood === 'Drill'),
+  Trap: beatCatalog.filter((beat) => beat.mood === 'Trap'),
+};
+
 export type BeatOption = {
   id: Beat['id'];
   title: Beat['title'];
@@ -191,10 +165,17 @@ function WaveformPreview({
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [activation, setActivation] = useState(0);
+  const pendingPlayRef = useRef(false);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || activation === 0) return;
 
+    let disposed = false;
+    let cleanup: (() => void) | undefined;
+    async function initialize() {
+      const { default: WaveSurfer } = await import('wavesurfer.js');
+      if (disposed || !containerRef.current) return;
     // Build a few URL variants (handles en-dash/em-dash vs hyphen, and already-encoded paths)
     const encodeAssetPath = (raw: string) => {
       // If it is already a full URL, don't rewrite it (it may already be encoded).
@@ -253,7 +234,7 @@ function WaveformPreview({
 
     // Use MediaElement for maximum MP3 stability in browsers (WebAudio decoding can fail silently)
     const audioEl = document.createElement('audio');
-    audioEl.preload = 'metadata';
+    audioEl.preload = 'none';
     audioEl.crossOrigin = 'anonymous';
     // Never show native audio UI (the white control bar)
     audioEl.controls = false;
@@ -291,6 +272,7 @@ function WaveformPreview({
     wave.on('ready', () => {
       readyRef.current = true;
       setIsReady(true);
+      if (pendingPlayRef.current) { pendingPlayRef.current = false; void wave.play().catch(() => setIsPlaying(false)); }
       setHasError(false);
       // clear watchdog if running
       if (loadTimeout) window.clearTimeout(loadTimeout);
@@ -335,11 +317,11 @@ function WaveformPreview({
     });
 
 
-    // Load directly (MediaElement). Avoid prefetching the entire MP3 via fetch.
+    // WaveSurfer fetches audio to build the waveform. Only load after explicit activation.
     const candidate = urlCandidates[0];
     if (candidate && !cancelled) {
       try {
-        wave.load(candidate);
+        void wave.load(candidate).catch(() => { if (!cancelled) setHasError(true); });
       } catch {
         setHasError(true);
       }
@@ -366,13 +348,23 @@ function WaveformPreview({
       }
       waveRef.current = null;
     };
-  }, [id, url]);
+    }
+    void initialize().then(dispose => {
+      if (disposed) dispose?.(); else cleanup = dispose;
+    }).catch(() => { if (!disposed) setHasError(true); });
+    return () => { disposed = true; cleanup?.(); };
+  }, [id, url, activation]);
 
   const toggle = () => {
-    if (hasError) return;
+    if (activation === 0 || hasError) {
+      pendingPlayRef.current = true;
+      setHasError(false);
+      setActivation(value => value + 1);
+      return;
+    }
     const w = waveRef.current;
     if (!w) return;
-    w.playPause();
+    void w.playPause().catch(() => setIsPlaying(false));
   };
 
   return (
@@ -380,8 +372,8 @@ function WaveformPreview({
       <button
         type="button"
         onClick={toggle}
-        disabled={!isReady}
-        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.03] text-white/80 transition hover:border-white/25 hover:bg-white/[0.06] disabled:opacity-40 ${accentClass ?? ''}`}
+        disabled={activation > 0 && !isReady && !hasError}
+        className={`inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.03] text-white/80 transition hover:border-white/25 hover:bg-white/[0.06] disabled:opacity-40 ${accentClass ?? ''}`}
         aria-label={isPlaying ? i18n.pause : i18n.play}
         title={isPlaying ? i18n.pause : i18n.play}
       >
@@ -390,12 +382,12 @@ function WaveformPreview({
 
       <div className="flex-1">
         <div ref={containerRef} className="w-full overflow-hidden" />
-        <div className="mt-0.5 text-[10px] text-white/40">
+        <div className="mt-0.5 text-[10px] text-white/65">
           {hasError
             ? i18n.previewUnavailable
             : isReady
             ? i18n.previewSeekHint
-            : i18n.loading}
+            : activation === 0 ? i18n.play : i18n.loading}
         </div>
       </div>
     </div>
@@ -412,9 +404,9 @@ export default function Producer() {
   const [activeGenre, setActiveGenre] = useState<Genre>('Afro');
 
   // grouped beats for compact catalog
-  const afro = beatCatalog.filter((b) => b.mood === 'Afro');
-  const drill = beatCatalog.filter((b) => b.mood === 'Drill');
-  const trap = beatCatalog.filter((b) => b.mood === 'Trap');
+  const afro = beatCatalogByMood.Afro;
+  const drill = beatCatalogByMood.Drill;
+  const trap = beatCatalogByMood.Trap;
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -435,6 +427,10 @@ export default function Producer() {
 
   return (
     <section id="producer" ref={sectionRef} className="relative w-full bg-black py-24 md:py-32 overflow-hidden">
+      <div aria-hidden="true" className="absolute inset-0">
+        <ResponsiveImage image={photographyPreview.ph06} sizes="100vw" alt="" loading="lazy" className="h-full w-full object-cover object-[50%_38%] opacity-[0.82]" />
+        <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(0,0,0,0.58),rgba(0,0,0,0.18)_48%,rgba(0,0,0,0.52))]" />
+      </div>
       {/* Purple Bloom Effect */}
       <div className="purple-bloom opacity-70" />
 
@@ -460,60 +456,41 @@ export default function Producer() {
           </p>
         </div>
 
-        {/* Spotify Links */}
-        <div
-          className={`mx-auto mb-5 flex w-full max-w-5xl items-center justify-center gap-3 text-white/80 transition-all duration-700 delay-150 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <Music className="h-5 w-5 text-[#1DB954]" />
-          <span className="text-sm font-semibold uppercase tracking-[0.22em]">{t('producer.spotifyLabel')}</span>
-        </div>
-
-        <div
-          className={`mx-auto grid w-full max-w-5xl grid-cols-2 gap-3 transition-all duration-700 delay-200 sm:gap-4 md:gap-5 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          {producerTracks.map((track, index) => (
-            <div
-              key={track.id}
-              className={`relative min-w-0 ${
-                producerTracks.length % 2 === 1 && index === producerTracks.length - 1 ? 'col-span-2' : ''
-              }`}
-            >
-              <a
-                href={track.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex min-h-[104px] flex-col justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_16px_36px_rgba(0,0,0,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#1DB954]/45 hover:bg-[#1DB954]/10 hover:shadow-[0_20px_42px_rgba(29,185,84,0.12)] sm:min-h-[112px] sm:p-5"
-              >
-                <div className="min-w-0">
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1DB954]/12 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#1DB954]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#1DB954]" />
-                      Spotify
-                    </span>
-                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-white/35 transition-colors duration-300 group-hover:text-[#1DB954]" />
-                  </div>
-                  <p className="text-sm font-semibold leading-tight text-white sm:text-base">{track.title}</p>
-                  <p className="mt-1 line-clamp-2 text-xs leading-snug text-white/55 sm:text-sm">{track.artists}</p>
-                </div>
-                <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-white/70 transition-colors duration-300 group-hover:text-white">
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-black transition-transform duration-300 group-hover:scale-105">
-                    <Play className="h-3.5 w-3.5 fill-black" />
-                  </span>
-                  <span className="hidden sm:inline">{t('producer.openSpotify')}</span>
-                </div>
-              </a>
+        <section className={`mx-auto w-full max-w-6xl transition-all duration-700 delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} aria-labelledby="producer-releases">
+          <div className="mb-7 flex items-center justify-between gap-4 border-b border-white/15 pb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1DB954]">{t('producer.spotifyLabel')}</p>
+              <h3 id="producer-releases" className="mt-2 font-head text-3xl uppercase tracking-tight text-white md:text-4xl">{t('producer.releases')}</h3>
             </div>
-          ))}
-        </div>
+            <Music className="h-6 w-6 shrink-0 text-[#1DB954]" aria-hidden="true" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+            {producerReleases.map((release) => (
+              <article key={release.id} className="overflow-hidden rounded-lg border border-white/10 bg-black/45 shadow-[0_18px_40px_rgba(0,0,0,0.24)] transition-colors hover:border-white/25">
+                <a href={release.platformUrl} target="_blank" rel="noreferrer" className="group grid grid-cols-1 gap-6 p-6 sm:grid-cols-[minmax(190px,0.85fr)_minmax(0,1fr)] sm:gap-8 sm:p-8">
+                  <img src={release.artwork} alt={`${release.title} cover art`} width={600} height={600} loading="lazy" decoding="async" className="aspect-[16/10] w-full rounded-md object-cover transition-transform duration-500 group-hover:scale-[1.025] sm:aspect-square sm:h-full" />
+                  <div className="flex min-w-0 flex-col justify-between sm:py-2">
+                    <div>
+                      <p className="font-head text-[1.65rem] uppercase leading-[1.05] text-white sm:text-4xl">{release.title}</p>
+                      <p className="mt-3 text-sm leading-6 text-white/65">{release.artists}</p>
+                      <div className="mt-6 border-l-2 border-[#1DB954]/70 pl-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1DB954]">{t('producer.portfolioCredit')}</p>
+                        <p className="mt-2 text-[13px] font-medium leading-6 text-white/90">ARMAH — {release.portfolioRoles.join(' · ')}</p>
+                        <p className="mt-3 text-[10px] uppercase leading-5 tracking-[0.14em] text-white/48">{t('producer.platformRoleLabels')}: {release.spotifyRoleLabels.join(' · ')}</p>
+                      </div>
+                    </div>
+                    <span className="mt-8 inline-flex min-h-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70 transition-colors group-hover:text-white"><span className="h-1.5 w-1.5 rounded-full bg-[#1DB954]" />Spotify · {t('producer.listen')} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /></span>
+                  </div>
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
 
         {/* Beat Catalog */}
         <div
           id="beats"
-          className={`w-full max-w-6xl mx-auto mt-16 transition-all duration-700 delay-250 ${
+          className={`w-full max-w-6xl mx-auto mt-20 transition-all duration-700 delay-250 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -631,7 +608,7 @@ export default function Producer() {
                         </button>
                       </div>
 
-                      <p className="text-white/30 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
+                      <p className="text-white/65 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
                     </div>
                   ))}
                 </div>
@@ -714,7 +691,7 @@ export default function Producer() {
                         </button>
                       </div>
 
-                      <p className="text-white/30 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
+                      <p className="text-white/65 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
                     </div>
                   ))}
                 </div>
@@ -797,7 +774,7 @@ export default function Producer() {
                         </button>
                       </div>
 
-                      <p className="text-white/30 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
+                      <p className="text-white/65 text-xs mt-2">{t('beatCatalog.idLabel')}: {b.id} • {t('beatCatalog.termsLine')}</p>
                     </div>
                   ))}
                 </div>

@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import LanguageToggle from './LanguageToggle'
+// NOTE: ThemeToggle is intentionally not rendered — the public site is
+// dark-only. The component file is preserved for a possible later restore.
 
-type NavLinkKey = 'about' | 'live' | 'shows' | 'beats' | 'producer' | 'booking'
+type NavLinkKey = 'about' | 'live' | 'shows' | 'mixes' | 'producer' | 'booking'
 
 type NavLink = { key: NavLinkKey; href: string }
 
 export default function Navbar(): JSX.Element {
   const [open, setOpen] = useState(false)
   const [isAtTop, setIsAtTop] = useState(true)
+  const headerRef = useRef<HTMLElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const toggleRef = useRef<HTMLButtonElement | null>(null)
   const { t } = useI18n()
@@ -16,15 +19,11 @@ export default function Navbar(): JSX.Element {
   const links: NavLink[] = [
     { key: 'about', href: '#about' },
     { key: 'live', href: '#live' },
+    { key: 'mixes', href: '#mixes' },
     { key: 'shows', href: '#shows' },
-    { key: 'beats', href: '#beats' },
     { key: 'producer', href: '#producer' },
     { key: 'booking', href: '#booking' },
   ]
-
-  const mid = Math.ceil(links.length / 2)
-  const leftLinks = links.slice(0, mid)
-  const rightLinks = links.slice(mid)
 
   useEffect(() => {
     // Prevent background scroll when menu open
@@ -69,63 +68,66 @@ export default function Navbar(): JSX.Element {
     return () => window.removeEventListener('scroll', onScroll)
   }, [open])
 
+  useEffect(() => {
+    if (!open) return;
+    menuRef.current?.querySelector<HTMLElement>('select, a, button')?.focus();
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === 'Escape') { setOpen(false); toggleRef.current?.focus(); }
+      if (event.key !== 'Tab') return;
+      const items = Array.from(headerRef.current?.querySelectorAll<HTMLElement>('a, button, select') ?? []).filter(el => el.getClientRects().length > 0);
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
+    function resized() { if (window.innerWidth >= 1280) setOpen(false); }
+    document.addEventListener('keydown', keyboard);
+    window.addEventListener('resize', resized);
+    return () => { document.removeEventListener('keydown', keyboard); window.removeEventListener('resize', resized); };
+  }, [open]);
+
   function handleLinkClick() {
     setOpen(false)
   }
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-out pointer-events-auto backdrop-blur-none border-transparent ${
-        open ? 'bg-black' : isAtTop ? 'bg-gradient-to-b from-black/35 via-black/15 to-transparent' : 'bg-transparent'
+    <header ref={headerRef}
+      className={`theme-navbar fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-out pointer-events-auto backdrop-blur-none border-transparent ${
+        open ? 'bg-black' : isAtTop ? 'bg-gradient-to-b from-black/35 via-black/15 to-transparent' : 'bg-black/95'
       }`}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <nav className="relative max-w-6xl mx-auto px-6 sm:px-6 lg:px-8" aria-label="Main navigation">
-        <div className="flex items-center justify-center h-16 relative">
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
-            <LanguageToggle />
+      <nav className="relative px-5 sm:px-6 lg:px-8" aria-label={t('accessibility.navigation')}>
+        <div className="flex h-20 items-center gap-6 lg:gap-8">
+          <div className="absolute left-1/2 -translate-x-1/2 xl:static xl:translate-x-0">
+            <a href="/" aria-label={t('accessibility.home')} className="flex items-center justify-center">
+              <img
+                src="/assets/ARMAH_logo_transparent_white.png"
+                alt="ARMAH"
+                className="h-20 w-auto object-contain"
+              />
+            </a>
           </div>
-          <div className="flex-1 hidden md:flex justify-end gap-8">
-            {leftLinks.map((l) => (
+          <div className="hidden items-center gap-1 xl:flex">
+            {links.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
                 onClick={handleLinkClick}
-                className="text-sm text-white hover:underline py-3 px-2 cursor-pointer font-head tracking-wide"
+                className="px-2 py-3 text-sm font-head tracking-wide text-white hover:underline"
               >
                 {t(`nav.${l.key}`)}
               </a>
             ))}
           </div>
-
-          <div className="flex-none mx-6 flex items-center justify-center flex-shrink-0">
-            <a href="/" aria-label="Home" className="flex items-center justify-center flex-shrink-0">
-              <img
-                src="/assets/ARMAH_logo_transparent_white.png"
-                alt="ARMAH"
-                className="h-[108px] sm:h-[122px] md:h-[135px] w-auto mx-auto object-contain flex-shrink-0"
-              />
-            </a>
+          <div className="ml-auto hidden items-center gap-2 xl:flex">
+            <LanguageToggle />
           </div>
 
-          <div className="flex-1 hidden md:flex justify-start gap-8">
-            {rightLinks.map((l) => (
-              <a
-                key={l.href + '-right'}
-                href={l.href}
-                onClick={handleLinkClick}
-                className="text-sm text-white hover:underline py-3 px-2 cursor-pointer font-head tracking-wide"
-              >
-                {t(`nav.${l.key}`)}
-              </a>
-            ))}
-          </div>
-
-          <div className="md:hidden absolute right-4 top-1/2 -translate-y-1/2">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 xl:hidden">
             <button
               ref={toggleRef}
               onClick={() => setOpen((s) => !s)}
-              aria-label="Toggle menu"
+              aria-label={t(open ? 'accessibility.closeMenu' : 'accessibility.openMenu')} aria-controls="mobile-navigation"
               aria-expanded={open}
               className="text-white focus:outline-none bg-transparent p-2 rounded"
             >
@@ -143,17 +145,19 @@ export default function Navbar(): JSX.Element {
 
       {/* Mobile panel */}
       {open && (
-        <div ref={menuRef} className="md:hidden bg-black border-t border-white/10">
+        <div id="mobile-navigation" ref={menuRef} className="xl:hidden bg-black border-t border-white/10">
           <div className="px-4 pt-2 pb-4 space-y-1">
             <div className="pb-2">
-              <LanguageToggle />
+              <div className="flex items-center gap-2">
+                <LanguageToggle />
+              </div>
             </div>
             {links.map((l) => (
               <a
                 key={l.href + '-mobile'}
                 href={l.href}
                 onClick={handleLinkClick}
-                className="block text-white text-base font-head tracking-wide py-2"
+                className="flex min-h-11 items-center text-white text-base font-head tracking-wide py-2"
               >
                 {t(`nav.${l.key}`)}
               </a>

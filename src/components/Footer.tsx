@@ -1,20 +1,15 @@
 import { useI18n } from "../i18n";
-import { Instagram, Music, Mail } from 'lucide-react';
+import { Instagram, Youtube, Mail } from 'lucide-react';
 import { siteConfig } from '../data/armah';
+import { bookingResources } from '../data/bookingResources';
 
 export default function Footer() {
   const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
-    <footer className="relative w-full bg-black pt-16 pb-8">
+    <footer className="theme-footer relative w-full bg-black pt-16 pb-8">
       {/* Top Border */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-armah-red/50 to-transparent" />
 
@@ -41,18 +36,18 @@ export default function Footer() {
                 {[
                   { label: t("nav.about"), id: "about" },
                   { label: t("nav.live"), id: "live" },
+                  { label: t("nav.mixes"), id: "mixes" },
                   { label: t("nav.shows"), id: "shows" },
                   { label: t("nav.producer"), id: "producer" },
                   { label: t("nav.booking"), id: "booking" },
                 ].map((item) => (
                   <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(item.id)}
+                    <a
+                      href={`#${item.id}`}
                       className="text-white/50 hover:text-armah-red text-sm transition-colors duration-200"
                     >
                       {item.label}
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -72,13 +67,13 @@ export default function Footer() {
                   <Instagram className="w-5 h-5" />
                 </a>
                 <a
-                  href="https://open.spotify.com"
+                  href="https://www.youtube.com/@Prodbyarmah"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-white/5 hover:bg-armah-red/20 flex items-center justify-center text-white/60 hover:text-armah-red transition-all duration-200"
-                  aria-label="Spotify"
+                  aria-label="YouTube"
                 >
-                  <Music className="w-5 h-5" />
+                  <Youtube className="w-5 h-5" />
                 </a>
                 <a
                   href={`mailto:${siteConfig.email}`}
@@ -91,6 +86,9 @@ export default function Footer() {
             </div>
           </div>
 
+          <nav aria-label={t('accessibility.resources')} className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
+            {bookingResources.map(resource => <a key={resource.id} href={resource.href} className="inline-flex min-h-11 items-center text-sm text-white/70 hover:text-white">{t(resource.labelKey)}</a>)}
+          </nav>
           {/* Divider */}
           <div className="w-full h-px bg-white/10 mb-8" />
 
@@ -99,18 +97,18 @@ export default function Footer() {
             <div className="flex items-center gap-6">
               <a
                 href="/legal/impressum.html"
-                className="text-white/40 hover:text-armah-red text-sm transition-colors duration-200"
+                className="text-white/65 hover:text-armah-red text-sm transition-colors duration-200"
               >
                 {t("legal.impressum")}
               </a>
               <a
                 href="/legal/datenschutz.html"
-                className="text-white/40 hover:text-armah-red text-sm transition-colors duration-200"
+                className="text-white/65 hover:text-armah-red text-sm transition-colors duration-200"
               >
                 {t("legal.privacy")}
               </a>
             </div>
-            <p className="text-white/30 text-sm">
+            <p className="text-white/65 text-sm">
              &copy; {currentYear} ARMAH. {t("footer.rights")}
             </p>
           </div>

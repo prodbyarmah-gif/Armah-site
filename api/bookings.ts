@@ -1,11 +1,54 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Minimal CORS helper (local dev + prod)
-function setCors(res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://prodbyarmah.com');
+// Minimal CORS helper (local dev + prod). Only the two canonical origins are
+// ever echoed; same-origin form posts do not depend on CORS at all.
+const ALLOWED_ORIGINS = new Set(['https://prodbyarmah.com', 'https://www.prodbyarmah.com']);
+function setCors(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers?.origin;
+  res.setHeader('Access-Control-Allow-Origin', typeof origin === 'string' && ALLOWED_ORIGINS.has(origin) ? origin : 'https://prodbyarmah.com');
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-store');
 }
+
+// Best-effort per-IP rate limiting for the public booking endpoint. NOTE:
+// serverless instances do not share this memory, so this only raises the bar
+// per instance — Vercel-level firewall/rate limiting remains the recommended
+// defense in depth (see deployment report).
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_MAX_REQUESTS = 5;
+const rateBuckets = new Map<string, { start: number; count: number }>();
+
+function clientIp(req: VercelRequest): string {
+  const forwarded = req.headers?.['x-forwarded-for'];
+  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(',')[0]?.trim();
+  const socketIp = (req.socket as { remoteAddress?: string } | undefined)?.remoteAddress;
+  return first || socketIp || 'unknown';
+}
+
+function checkRateLimit(ip: string): { limited: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  const bucket = rateBuckets.get(ip);
+  if (!bucket || now - bucket.start >= RATE_WINDOW_MS) {
+    rateBuckets.set(ip, { start: now, count: 1 });
+    return { limited: false, retryAfterSec: 0 };
+  }
+  bucket.count += 1;
+  if (bucket.count > RATE_MAX_REQUESTS) {
+    return { limited: true, retryAfterSec: Math.max(1, Math.ceil((RATE_WINDOW_MS - (now - bucket.start)) / 1000)) };
+  }
+  return { limited: false, retryAfterSec: 0 };
+}
+
+/** Test-only reset for the in-memory booking rate limiter. */
+export function __resetBookingRateLimit(): void {
+  rateBuckets.clear();
+}
+
+// Absolute ceiling for the raw request body. Per-field caps below keep
+// legitimate inquiries far under this; anything larger is abuse/probing.
+const MAX_BODY_BYTES = 32 * 1024;
 
 type BookingPayload = {
   name?: string;
@@ -186,12 +229,13 @@ function escapeHtml(value: string): string {
 }
 
 function formatAddress(email: string, name?: string): string {
-  const displayName = (name || '').trim();
+  const displayName = (name || '').replace(/[\x00-\x1F\x7F]/g, '').trim();
   if (!displayName) return `<${email}>`;
   return `"${displayName.replace(/"/g, '')}" <${email}>`;
 }
 
 function encodeMimeSubject(subject: string): string {
+  subject = subject.replace(/[\x00-\x1F\x7F]/g, ' ');
   // eslint-disable-next-line no-control-regex
   if (/^[\x00-\x7F]*$/.test(subject)) return subject;
   return `=?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=`;
@@ -433,7 +477,7 @@ function buildAutoReplyHtml(details: {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    setCors(res);
+    setCors(req, res);
 
     if (req.method === 'OPTIONS') {
       return res.status(204).end();
@@ -441,6 +485,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method !== 'POST') {
       return res.status(405).json({ ok: false, error: 'Method not allowed' });
+    }
+
+    const { limited, retryAfterSec } = checkRateLimit(clientIp(req));
+    if (limited) {
+      res.setHeader('Retry-After', String(retryAfterSec));
+      return res.status(429).json({ ok: false, error: 'Too many requests' });
     }
 
     const bookingTo = requireEnv('BOOKING_TO');
@@ -462,9 +512,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       payload = body as BookingPayload;
     }
 
+    const rawSize = Buffer.byteLength(typeof body === 'string' ? body : JSON.stringify(body ?? {}), 'utf8');
+    if (rawSize > MAX_BODY_BYTES) {
+      return res.status(413).json({ ok: false, error: 'Payload too large' });
+    }
+
+    // These fields enter MIME headers; reject controls before normalization/trimming.
+    if ([payload?.name, payload?.email, payload?.eventType, payload?.location].some(
+      value => typeof value === 'string' && /[\x00-\x1F\x7F]/.test(value)
+    )) return res.status(400).json({ ok: false, error: 'Invalid field characters' });
+
     const name = clean(payload?.name, 120);
     const email = clean(payload?.email, 200);
-    const inquiryType = clean(payload?.inquiryType, 40);
+    const inquiryType = clean(payload?.inquiryType, 40) || 'dj';
     const eventType = clean(payload?.eventType, 120);
     const location = clean(payload?.location, 200);
     const message = clean(payload?.message, 4000);
@@ -489,6 +549,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!isEmail(email)) {
       return res.status(400).json({ ok: false, error: 'Invalid email' });
+    }
+
+    const eventTypes = inquiryType === 'dj'
+      ? ['club', 'festival', 'private', 'corporate', 'other']
+      : ['beat_license', 'custom_beat', 'production', 'mix_master', 'collab', 'other'];
+    if (!['dj', 'producer'].includes(inquiryType) || !eventTypes.includes(eventType)) {
+      return res.status(400).json({ ok: false, error: 'Invalid inquiry type' });
+    }
+    if (inquiryType === 'dj' && (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) ||
+      !Number.isFinite(Date.parse(eventDate)) || new Date(eventDate).toISOString().slice(0, 10) !== eventDate)) {
+      return res.status(400).json({ ok: false, error: 'Valid event date required' });
+    }
+    if (inquiryType === 'producer' && eventType === 'beat_license' && !beatId) {
+      return res.status(400).json({ ok: false, error: 'Beat selection required' });
     }
 
     const recipients = [bookingTo, ...managerRecipients].filter(Boolean);
