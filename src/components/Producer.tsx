@@ -4,6 +4,7 @@ import { AlertTriangle, ExternalLink, Music } from 'lucide-react';
 import ResponsiveImage from './ResponsiveImage';
 import { photographyPreview } from '../data/photographyPreview';
 import { producerReleases } from '../data/releases';
+import { createPreviewAudioElement } from '../lib/previewAudio';
 
 import type WaveSurfer from 'wavesurfer.js';
 
@@ -232,13 +233,10 @@ function WaveformPreview({
 
     const urlCandidates = makeUrlVariants(url);
 
-    // Use MediaElement for maximum MP3 stability in browsers (WebAudio decoding can fail silently)
-    const audioEl = document.createElement('audio');
-    audioEl.preload = 'none';
-    audioEl.crossOrigin = 'anonymous';
-    // Never show native audio UI (the white control bar)
-    audioEl.controls = false;
-    audioEl.style.display = 'none';
+    // Use MediaElement for maximum MP3 stability in browsers (WebAudio decoding can fail silently).
+    // Preload contract lives in lib/previewAudio: 'metadata' is required so
+    // WebKit fires loadedmetadata and wavesurfer's load() can resolve.
+    const audioEl = createPreviewAudioElement();
 
     const wave = WaveSurfer.create({
       container: containerRef.current,
