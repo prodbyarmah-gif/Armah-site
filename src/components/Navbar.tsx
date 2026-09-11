@@ -97,7 +97,7 @@ export default function Navbar(): JSX.Element {
               <img
                 src="/assets/ARMAH_logo_cropped.png"
                 alt="ARMAH"
-                className="h-10 w-auto object-contain"
+                className="h-8 w-auto object-contain"
               />
             </a>
           </div>

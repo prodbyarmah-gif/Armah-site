@@ -990,28 +990,23 @@ export default function Trusted(): JSX.Element {
 
         <div className="repeat-editorial mx-auto mb-12 max-w-6xl px-5 py-6 sm:px-7 md:px-9">
           <h3 className="repeat-kicker text-xs font-semibold uppercase tracking-[0.2em]">{t('trusted.repeat')}</h3>
-          {/* One horizontal editorial row on every viewport: four columns on
-              desktop, a swipeable overflow row on mobile (never 2×2, never
-              unreadably shrunk). Counts derive from the Career Map history
-              via homepageRelationships — no second dataset. */}
-          <div className="relative">
-            <div tabIndex={0} role="region" aria-label={t('trusted.repeat')} className="overflow-x-auto scrollbar-hide">
-            <ul className="mt-4 flex w-max min-w-full snap-x snap-mandatory gap-0 border-y lg:grid lg:w-auto lg:grid-cols-4 lg:snap-none lg:overflow-visible">
-              {homepageRelationships.map((booking) => (
-                <li key={booking.id} className="repeat-item flex min-h-24 w-[248px] shrink-0 snap-start items-end justify-between gap-4 border-r px-5 py-5 last:border-r-0 sm:w-[300px] lg:w-auto lg:px-5 lg:py-5">
-                  <div className="min-w-0">
-                    <p className="repeat-kicker text-[10px] font-semibold uppercase tracking-[0.2em]">
-                      {booking.relationship === 'venue' ? t('trusted.venueRelationship') : t('trusted.brandRelationship')}
-                    </p>
-                    <h4 className="repeat-name mt-2 font-head text-3xl uppercase leading-none sm:text-4xl">{booking.name}</h4>
-                  </div>
-                  <span className="repeat-count text-sm font-semibold tracking-wide">×{booking.count}</span>
-                </li>
-              ))}
-            </ul>
-            </div>
-            <div aria-hidden="true" className="repeat-fade pointer-events-none absolute inset-y-0 right-0 w-14 lg:hidden" />
-          </div>
+          {/* One horizontal editorial row on desktop; 2×2 grid on mobile so
+              all four relationships are directly visible with no horizontal
+              swipe. Counts derive from the Career Map history via
+              homepageRelationships — no second dataset. */}
+          <ul className="mt-4 grid grid-cols-2 border-y lg:grid-cols-4">
+            {homepageRelationships.map((booking) => (
+              <li key={booking.id} className="repeat-item flex min-h-28 flex-col justify-end gap-2 border-b px-4 py-4 odd:border-r odd:pr-4 even:pl-4 [&:nth-last-child(-n+2)]:border-b-0 lg:min-h-24 lg:flex-row lg:items-end lg:justify-between lg:gap-4 lg:border-b-0 lg:px-5 lg:py-5 lg:odd:pr-5 lg:even:pl-5 lg:not(:last-child):border-r">
+                <div className="min-w-0">
+                  <p className="repeat-kicker text-[10px] font-semibold uppercase tracking-[0.2em]">
+                    {booking.relationship === 'venue' ? t('trusted.venueRelationship') : t('trusted.brandRelationship')}
+                  </p>
+                  <h4 className="repeat-name mt-2 font-head text-3xl uppercase leading-none sm:text-4xl">{booking.name}</h4>
+                </div>
+                <span className="repeat-count text-sm font-semibold tracking-wide">×{booking.count}</span>
+              </li>
+            ))}
+          </ul>
           <a href="#booking" className="repeat-name mt-4 inline-flex min-h-11 items-center text-sm underline underline-offset-4 hover:text-armah-red">{t('mixes.booking')}</a>
         </div>
 

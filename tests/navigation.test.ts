@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { NAV_LINKS, firstNavLinkIn } from '../src/lib/navigation.ts';
 
-test('approved navigation order starts with BIO and ends with BOOKING', () => {
+test('navigation order mirrors the homepage flow, ending with BOOKING', () => {
   assert.deepEqual(
     NAV_LINKS.map((link) => link.key),
-    ['about', 'live', 'mixes', 'shows', 'producer', 'booking'],
+    ['live', 'mixes', 'shows', 'producer', 'about', 'booking'],
   );
   assert.deepEqual(
     NAV_LINKS.map((link) => link.href),
-    ['#about', '#live', '#mixes', '#shows', '#producer', '#booking'],
+    ['#live', '#mixes', '#shows', '#producer', '#about', '#booking'],
   );
 });
 

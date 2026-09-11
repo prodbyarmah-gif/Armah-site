@@ -246,9 +246,10 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
         if (model) {
           // Owner-approved swing about world Z (see HERO_ROTATION_AXIS): Z
           // is the physical line the letter tops stand along, so the
-          // wordmark yaws LEFT <-> RIGHT (±90°, 180° total) while staying
-          // upright. Absolute function of elapsed time — pausing the loop
-          // (offscreen/hidden tab) freezes the swing without jumps.
+          // wordmark rocks LEFT <-> RIGHT (±45°, 90° total) while staying
+          // upright and readable. Absolute function of elapsed time —
+          // pausing the loop (offscreen/hidden tab) freezes the swing
+          // without jumps.
           elapsed += delta;
           model.rotation[HERO_ROTATION_AXIS] = heroSwingAngle(elapsed);
         }

@@ -1,19 +1,20 @@
-// Single source of truth for the approved site navigation order:
-// BIO → LIVE → MIXES → SHOWS → PRODUCER → BOOKING.
+// Single source of truth for the approved site navigation order, mirroring
+// the actual homepage flow: LIVE → MIXES → SHOWS → PRODUCER → BIO → BOOKING
+// (Hero → Live → Mixes → Repeat/Career Map → Producer → Bio → Booking).
 // Desktop header, mobile menu, and footer all derive from this definition
 // so the order cannot silently drift again. Section hrefs are stable and
 // must not be changed without updating the corresponding section ids.
 
-export type NavLinkKey = 'about' | 'live' | 'mixes' | 'shows' | 'producer' | 'booking';
+export type NavLinkKey = 'live' | 'mixes' | 'shows' | 'producer' | 'about' | 'booking';
 
 export type NavLink = { key: NavLinkKey; href: string };
 
 export const NAV_LINKS: readonly NavLink[] = [
-  { key: 'about', href: '#about' },
   { key: 'live', href: '#live' },
   { key: 'mixes', href: '#mixes' },
   { key: 'shows', href: '#shows' },
   { key: 'producer', href: '#producer' },
+  { key: 'about', href: '#about' },
   { key: 'booking', href: '#booking' },
 ] as const;
 

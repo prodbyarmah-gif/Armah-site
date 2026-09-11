@@ -101,8 +101,6 @@ html[data-theme='light'] .theme-navbar .theme-toggle { border-color: var(--borde
 }
 .booking-panel input::placeholder,
 .booking-panel textarea::placeholder { color: rgba(255, 255, 255, 0.42); }
-/* Swipe affordance for the single-row repeat-booking strip on mobile. */
-.repeat-fade { background: linear-gradient(90deg, transparent, var(--surface-secondary) 85%); }
 html[data-theme='light'] .booking-panel {
   color: var(--text-primary);
   text-shadow: none;

@@ -34,7 +34,7 @@ export function getHero3dTheme(theme: HeroTheme): {
     : { clearColor: 0x000000, metalColor: 0xffffff, rimColor: 0xa31621, intensity: 1, roughness: 0.045, envMapIntensity: 1.3, exposure: 1.0 };
 }
 
-export const HERO_SWING_AMPLITUDE = Math.PI / 2;
+export const HERO_SWING_AMPLITUDE = Math.PI / 4;
 export const HERO_SWING_PERIOD_MS = 12_000;
 
 // Verified rotation axis for the Hero swing (see HeroLogo3D usage).
@@ -47,12 +47,13 @@ export const HERO_SWING_PERIOD_MS = 12_000;
 // Do not change this without re-verifying upright extremes in a real browser.
 export const HERO_ROTATION_AXIS = 'z' as const;
 
-// Owner-approved motion: a controlled LEFT <-> RIGHT swing with 180° TOTAL
-// travel (approximately -90° <-> +90°), then smoothly back — never a
+// Owner-approved motion: a moderate LEFT <-> RIGHT rocking turn with 90°
+// TOTAL travel (approximately -45° <-> +45°), then smoothly back — never a
 // continuous 360° turn, never the backside, no propeller/clock-hand/roll.
-// Sinusoidal profile: peak velocity at center, zero velocity at the extremes
-// so reversals ease instead of snapping. Absolute function of elapsed time
-// (pauses cleanly with the render loop; no drift, no wrap point).
+// The face stays readable throughout while both sides show chrome shading
+// and depth. Sinusoidal profile: peak velocity at center, zero velocity at
+// the extremes so reversals ease instead of snapping. Absolute function of
+// elapsed time (pauses cleanly with the render loop; no drift, no wrap).
 export function heroSwingAngle(elapsedMs: number): number {
   return HERO_SWING_AMPLITUDE * Math.sin((elapsedMs * 2 * Math.PI) / HERO_SWING_PERIOD_MS);
 }
