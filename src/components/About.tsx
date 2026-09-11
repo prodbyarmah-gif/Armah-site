@@ -13,7 +13,11 @@ export default function About(): JSX.Element {
     <section id="about" className="bio-section relative w-full py-24 md:py-32">
       <div className="relative z-10 w-full px-6 lg:px-12 xl:px-24">
         <div className="mx-auto grid max-w-[1380px] grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1fr)] lg:gap-16">
-          <Reveal className="relative min-h-[480px] overflow-hidden border border-white/10 bg-[#050505] sm:min-h-[560px]">
+          {/* Desktop container matches the source 2:3 portrait ratio so the
+              full editorial composition (headroom, window light, hands)
+              stays visible instead of being cropped to ~63% by a short
+              landscape-ish box. Mobile keeps its own near-native crop. */}
+          <Reveal className="relative min-h-[480px] overflow-hidden border border-white/10 bg-[#050505] sm:min-h-[560px] lg:aspect-[2/3] lg:min-h-[560px]">
             <ResponsiveImage
               image={photographyPreview.ph09} sizes="(min-width: 1024px) 45vw, 100vw"
               alt="ARMAH in sunlight near a window."
