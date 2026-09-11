@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import LanguageToggle from './LanguageToggle'
+import { NAV_LINKS, firstNavLinkIn } from '../lib/navigation'
 // NOTE: ThemeToggle is intentionally not rendered — the public site is
 // dark-only. The component file is preserved for a possible later restore.
-
-type NavLinkKey = 'about' | 'live' | 'shows' | 'mixes' | 'producer' | 'booking'
-
-type NavLink = { key: NavLinkKey; href: string }
 
 export default function Navbar(): JSX.Element {
   const [open, setOpen] = useState(false)
@@ -16,14 +13,7 @@ export default function Navbar(): JSX.Element {
   const toggleRef = useRef<HTMLButtonElement | null>(null)
   const { t } = useI18n()
 
-  const links: NavLink[] = [
-    { key: 'about', href: '#about' },
-    { key: 'live', href: '#live' },
-    { key: 'mixes', href: '#mixes' },
-    { key: 'shows', href: '#shows' },
-    { key: 'producer', href: '#producer' },
-    { key: 'booking', href: '#booking' },
-  ]
+  const links = NAV_LINKS
 
   useEffect(() => {
     // Prevent background scroll when menu open
@@ -70,7 +60,11 @@ export default function Navbar(): JSX.Element {
 
   useEffect(() => {
     if (!open) return;
-    menuRef.current?.querySelector<HTMLElement>('select, a, button')?.focus();
+    // Place initial focus on the first NAVIGATION LINK. Never auto-focus the
+    // language <select>: on mobile browsers focusing a select opens the
+    // native picker and blocks access to the navigation. Language selection
+    // stays an independent, intentional action (still reachable via Tab).
+    (firstNavLinkIn(menuRef.current) as HTMLElement | null)?.focus?.();
     function keyboard(event: KeyboardEvent) {
       if (event.key === 'Escape') { setOpen(false); toggleRef.current?.focus(); }
       if (event.key !== 'Tab') return;
@@ -97,13 +91,13 @@ export default function Navbar(): JSX.Element {
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <nav className="relative px-5 sm:px-6 lg:px-8" aria-label={t('accessibility.navigation')}>
-        <div className="flex h-20 items-center gap-6 lg:gap-8">
+        <div className="flex h-16 items-center gap-6 lg:gap-8">
           <div className="absolute left-1/2 -translate-x-1/2 xl:static xl:translate-x-0">
-            <a href="/" aria-label={t('accessibility.home')} className="flex items-center justify-center">
+            <a href="/" aria-label={t('accessibility.home')} className="flex min-h-11 min-w-11 items-center justify-center px-1">
               <img
-                src="/assets/ARMAH_logo_transparent_white.png"
+                src="/assets/ARMAH_logo_cropped.png"
                 alt="ARMAH"
-                className="h-20 w-auto object-contain"
+                className="h-10 w-auto object-contain"
               />
             </a>
           </div>

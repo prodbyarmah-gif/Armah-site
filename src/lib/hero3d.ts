@@ -34,22 +34,27 @@ export function getHero3dTheme(theme: HeroTheme): {
     : { clearColor: 0x000000, metalColor: 0xffffff, rimColor: 0xa31621, intensity: 1, roughness: 0.045, envMapIntensity: 1.3, exposure: 1.0 };
 }
 
-export const HERO_REVOLUTION_MS = 20_000;
+export const HERO_SWING_AMPLITUDE = Math.PI / 2;
+export const HERO_SWING_PERIOD_MS = 12_000;
 
-// Verified rotation axis for the Hero turntable (see HeroLogo3D usage).
+// Verified rotation axis for the Hero swing (see HeroLogo3D usage).
 // Measured GLB bounds: the sign face spans X (width) by Z (height) with the
-// thin extrusion axis along Y toward the camera above. Rotating about world
-// Y spins the face inside its own plane (clock hand — wrong). Rotating about
-// world Z fixes every point's Z, so letter tops stay up and the normal sweeps
-// +Y -> -X -> -Y -> +X: FRONT -> SIDE -> BACK -> SIDE. Do not change this
-// without re-verifying the 0/5/10/15/20 upright sequence in a real browser.
+// thin extrusion axis along Y toward the camera above. The camera looks down
+// -Y, so world Z appears as the screen-vertical: it is the physical line the
+// letter tops stand along. Rotating about world Z fixes every point's Z, so
+// tops stay up while the face normal yaws LEFT <-> RIGHT. Rotating about the
+// face normal (Y) would spin the face in-plane like a clock hand instead.
+// Do not change this without re-verifying upright extremes in a real browser.
 export const HERO_ROTATION_AXIS = 'z' as const;
 
-// Continuous turntable revolution: monotonically increasing angle, modulo
-// 2π. Never reverses, never eases at the wrap point. The Hero logo has no
-// amplitude envelope — rotation proceeds at a constant rate.
-export function advanceHeroRotation(angleRadians: number, deltaMs: number): number {
-  return (angleRadians + deltaMs * ((2 * Math.PI) / HERO_REVOLUTION_MS)) % (2 * Math.PI);
+// Owner-approved motion: a controlled LEFT <-> RIGHT swing with 180° TOTAL
+// travel (approximately -90° <-> +90°), then smoothly back — never a
+// continuous 360° turn, never the backside, no propeller/clock-hand/roll.
+// Sinusoidal profile: peak velocity at center, zero velocity at the extremes
+// so reversals ease instead of snapping. Absolute function of elapsed time
+// (pauses cleanly with the render loop; no drift, no wrap point).
+export function heroSwingAngle(elapsedMs: number): number {
+  return HERO_SWING_AMPLITUDE * Math.sin((elapsedMs * 2 * Math.PI) / HERO_SWING_PERIOD_MS);
 }
 
 // Waveform structure: 135 evenly spaced bars, 45 per Ghana section.

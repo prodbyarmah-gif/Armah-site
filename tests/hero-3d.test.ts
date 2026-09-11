@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { BARS_PER_SECTION, HERO_REVOLUTION_MS, HERO_ROTATION_AXIS, WAVEFORM_BARS, WAVEFORM_SECTION_COLORS, advanceHeroRotation, getHero3dPolicy, getHero3dTheme, waveformSection } from '../src/lib/hero3d.ts';
+import { BARS_PER_SECTION, HERO_ROTATION_AXIS, HERO_SWING_AMPLITUDE, HERO_SWING_PERIOD_MS, WAVEFORM_BARS, WAVEFORM_SECTION_COLORS, heroSwingAngle, getHero3dPolicy, getHero3dTheme, waveformSection } from '../src/lib/hero3d.ts';
 
 test('static identity is selected for reduced motion, save-data, or unavailable WebGL', () => {
   assert.equal(getHero3dPolicy({ reducedMotion: true, saveData: false, webglAvailable: true, width: 1440, dpr: 2 }).mode, 'static');
@@ -20,28 +20,31 @@ test('theme parameters keep the same metallic model readable in dark and light t
   assert.deepEqual(getHero3dTheme('light'), { clearColor: 0x000000, metalColor: 0x2b3342, rimColor: 0x8f151d, intensity: 1.15, roughness: 0.09, envMapIntensity: 1.5, exposure: 1.15 });
 });
 
-test('rotation is one continuous 20-second revolution with monotonic modulo progression', () => {
-  assert.equal(HERO_REVOLUTION_MS, 20_000);
-  // Locked axis: world Z is the line parallel to the sign's up (GLB face
-  // spans X by Z, thin axis Y). Rotating about the face normal (Y) spins the
-  // face in-plane like a clock hand instead of turning front to back.
+test('motion is a bounded left-right swing, never a continuous 360-degree turn', () => {
+  // Total travel between extremes is 180 degrees (approximately -90 to +90).
+  assert.equal(HERO_SWING_AMPLITUDE, Math.PI / 2);
+  // Locked axis: world Z is the physical line the letter tops stand along
+  // (GLB face spans X by Z, thin axis Y toward the camera above), so yawing
+  // about Z keeps the wordmark upright. Rotating about the face normal (Y)
+  // would spin the face in-plane like a clock hand instead.
   assert.equal(HERO_ROTATION_AXIS, 'z');
-  assert.equal(advanceHeroRotation(0, 0), 0);
-  assert.ok(Math.abs(advanceHeroRotation(0, 5000) - Math.PI / 2) < 1e-9);
-  assert.ok(Math.abs(advanceHeroRotation(0, 10000) - Math.PI) < 1e-9);
-  assert.ok(Math.abs(advanceHeroRotation(0, 20000)) < 1e-9);
-  assert.ok(Math.abs(advanceHeroRotation(Math.PI, 10000)) < 1e-9);
-  let angle = 0;
-  let previous = -1;
-  for (let step = 0; step < 40; step += 1) {
-    angle = advanceHeroRotation(angle, 500);
-    assert.ok(angle >= 0 && angle < 2 * Math.PI);
-    if (previous >= 0 && angle < previous) {
-      // The only permitted decrease is the 2π wrap point.
-      assert.ok(previous > Math.PI);
-    }
-    previous = angle;
+  // Sinusoidal profile: center at t=0, +90 at quarter period, center at
+  // half, -90 at three quarters, back to center after one full period.
+  assert.equal(heroSwingAngle(0), 0);
+  assert.ok(Math.abs(heroSwingAngle(HERO_SWING_PERIOD_MS / 4) - Math.PI / 2) < 1e-9);
+  assert.ok(Math.abs(heroSwingAngle(HERO_SWING_PERIOD_MS / 2)) < 1e-9);
+  assert.ok(Math.abs(heroSwingAngle((3 * HERO_SWING_PERIOD_MS) / 4) + Math.PI / 2) < 1e-9);
+  assert.ok(Math.abs(heroSwingAngle(HERO_SWING_PERIOD_MS)) < 1e-9);
+  // Bounded everywhere: no sample may reach the backside.
+  for (let t = 0; t <= HERO_SWING_PERIOD_MS; t += 137) {
+    assert.ok(Math.abs(heroSwingAngle(t)) <= Math.PI / 2 + 1e-9);
   }
+  // Ease at the extremes: velocity vanishes at quarter and three-quarter
+  // period (smooth reversal, no snap) and peaks at center (weighted feel).
+  const velocity = (t: number) => (heroSwingAngle(t + 1) - heroSwingAngle(t - 1)) / 2;
+  assert.ok(Math.abs(velocity(HERO_SWING_PERIOD_MS / 4)) < 1e-6);
+  assert.ok(Math.abs(velocity((3 * HERO_SWING_PERIOD_MS) / 4)) < 1e-6);
+  assert.ok(Math.abs(velocity(0)) > Math.abs(velocity(HERO_SWING_PERIOD_MS / 8)));
 });
 
 test('waveform keeps the locked 45/45/45 Ghana structure with bar-exact boundaries', () => {

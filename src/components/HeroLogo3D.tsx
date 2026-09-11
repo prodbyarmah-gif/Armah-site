@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { HeroTheme } from '../lib/hero3d';
-import { HERO_ROTATION_AXIS, advanceHeroRotation, getHero3dPolicy, getHero3dTheme, WAVEFORM_SECTION_COLORS, waveformSection } from '../lib/hero3d';
+import { HERO_ROTATION_AXIS, heroSwingAngle, getHero3dPolicy, getHero3dTheme, WAVEFORM_SECTION_COLORS, waveformSection } from '../lib/hero3d';
 
 type Props = { reducedMotion: boolean | null };
 type Connection = Navigator & { connection?: { saveData?: boolean } };
@@ -96,7 +96,13 @@ function disposeObject(object: import('three').Object3D): void {
 export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useState<HeroTheme>(() => currentTheme());
-  const [enhanced, setEnhanced] = useState(false);
+  // True only when WebGL/GLB enhancement definitively failed: the flat
+  // fallback image is then the intentional visual. During a normal boot the
+  // fallback is NOT shown — it reads as an unfinished 3D logo next to the
+  // poster, so the boot visual stays the live poster/video until the first
+  // correct chrome frame crossfades in. Static (reduced-motion/Save-Data/
+  // no-WebGL) mode always renders the fallback.
+  const [failed, setFailed] = useState(false);
   const saveData = Boolean((navigator as Connection).connection?.saveData);
   const staticOnly = Boolean(reducedMotion) || saveData || !supportsWebGL();
 
@@ -108,11 +114,10 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
 
   useEffect(() => {
     if (staticOnly) {
-      setEnhanced(false);
       return;
     }
 
-    setEnhanced(false);
+    setFailed(false);
 
     const host = hostRef.current;
     if (!host) return;
@@ -120,7 +125,7 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
     let running = false;
     let frame = 0;
     let lastFrame = 0;
-    let rotation = 0;
+    let elapsed = 0;
     let model: import('three').Object3D | undefined;
     let renderer: import('three').WebGLRenderer | undefined;
     let environment: import('three').Texture | undefined;
@@ -134,7 +139,7 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
       if (disposed) return;
       running = false;
       host.style.opacity = '0';
-      setEnhanced(false);
+      setFailed(true);
     };
 
     void Promise.all([
@@ -239,13 +244,13 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
         const delta = lastFrame === 0 ? 0 : Math.min(time - lastFrame, 100);
         lastFrame = time;
         if (model) {
-          // Turntable about world Z (see HERO_ROTATION_AXIS): Z is the line
-          // parallel to the sign's up, so tops stay up while the face normal
-          // sweeps FRONT -> SIDE -> BACK -> SIDE. No orientation-correction
-          // parent is needed: nodes carry no rotation, so model identity is
-          // already the approved upright and the pivot is the visual center.
-          rotation = advanceHeroRotation(rotation, delta);
-          model.rotation[HERO_ROTATION_AXIS] = rotation;
+          // Owner-approved swing about world Z (see HERO_ROTATION_AXIS): Z
+          // is the physical line the letter tops stand along, so the
+          // wordmark yaws LEFT <-> RIGHT (±90°, 180° total) while staying
+          // upright. Absolute function of elapsed time — pausing the loop
+          // (offscreen/hidden tab) freezes the swing without jumps.
+          elapsed += delta;
+          model.rotation[HERO_ROTATION_AXIS] = heroSwingAngle(elapsed);
         }
         renderer.render(scene, camera);
       };
@@ -289,7 +294,6 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
         renderer?.render(scene, camera);
         if (!disposed) {
           host.style.opacity = '1';
-          setEnhanced(true);
           syncRunning();
         }
       }, undefined, fail);
@@ -314,11 +318,13 @@ export default function HeroLogo3D({ reducedMotion }: Props): JSX.Element {
 
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-[clamp(4.5rem,15vh,8.5rem)] z-10 mx-auto h-[min(32vh,330px)] min-h-[200px] w-[min(94vw,900px)]">
-      <img
-        src={theme === 'light' ? '/assets/hero/armah-logo-fallback-light.png' : '/assets/hero/armah-logo-fallback-dark.png'}
-        alt=""
-        className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-500 ${enhanced ? 'opacity-0' : 'opacity-100'}`}
-      />
+      {(staticOnly || failed) && (
+        <img
+          src={theme === 'light' ? '/assets/hero/armah-logo-fallback-light.png' : '/assets/hero/armah-logo-fallback-dark.png'}
+          alt=""
+          className="absolute inset-0 h-full w-full object-contain"
+        />
+      )}
       {!staticOnly && <div ref={hostRef} data-visible="true" className="absolute inset-0 opacity-0 transition-opacity duration-300" />}
     </div>
   );

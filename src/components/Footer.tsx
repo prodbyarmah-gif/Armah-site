@@ -2,6 +2,7 @@ import { useI18n } from "../i18n";
 import { Instagram, Youtube, Mail } from 'lucide-react';
 import { siteConfig } from '../data/armah';
 import { bookingResources } from '../data/bookingResources';
+import { NAV_LINKS } from '../lib/navigation';
 
 export default function Footer() {
   const { t } = useI18n();
@@ -33,20 +34,13 @@ export default function Footer() {
             <div className="text-center">
               <h4 className="text-white font-head mb-4 tracking-wide uppercase">{t("footer.navigation")}</h4>
               <ul className="space-y-2">
-                {[
-                  { label: t("nav.about"), id: "about" },
-                  { label: t("nav.live"), id: "live" },
-                  { label: t("nav.mixes"), id: "mixes" },
-                  { label: t("nav.shows"), id: "shows" },
-                  { label: t("nav.producer"), id: "producer" },
-                  { label: t("nav.booking"), id: "booking" },
-                ].map((item) => (
-                  <li key={item.id}>
+                {NAV_LINKS.map((item) => (
+                  <li key={item.key}>
                     <a
-                      href={`#${item.id}`}
+                      href={item.href}
                       className="text-white/50 hover:text-armah-red text-sm transition-colors duration-200"
                     >
-                      {item.label}
+                      {t(`nav.${item.key}`)}
                     </a>
                   </li>
                 ))}

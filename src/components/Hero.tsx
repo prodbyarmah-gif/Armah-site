@@ -5,6 +5,7 @@ import { siteConfig } from '../data/armah';
 import { imageAssets } from '../data/media';
 import ResponsiveImage from './ResponsiveImage';
 import HeroLogo3D from './HeroLogo3D';
+import { isSceneVisuallySafe, markSceneReady, shouldResumePlayback } from '../lib/heroVideo';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const CROSSFADE_MS = 1200;
@@ -24,6 +25,37 @@ export default function Hero() {
   const isTransitioningRef = useRef(false);
   const transitionTimeoutRef = useRef<number | null>(null);
   const [activeVideo, setActiveVideo] = useState<HeroVideoId>('kwamzy');
+  // Independent VIDEO readiness (see lib/heroVideo): each scene becomes
+  // visible only after its own canplay/playing signal. The approved poster
+  // stays beneath, so boot/reload never shows black or empty video.
+  // 3D readiness is owned separately by HeroLogo3D — neither blocks the other.
+  const [readyScenes, setReadyScenes] = useState<Record<HeroVideoId, boolean>>({ kwamzy: false, dali: false });
+
+  const ensureActivePlayback = (id: HeroVideoId) => {
+    if (reduce || activeSceneRef.current !== id) return;
+    const video = videoRefs.current[id];
+    if (video && shouldResumePlayback(video)) {
+      void video.play().catch(() => {
+        // Poster remains visible underneath; the next media event retries.
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (reduce) return;
+    // Reload/hidden-tab recovery: when the page becomes visible again (or is
+    // restored from bfcache), resume the active scene if it stalled. Purely
+    // event-driven — no timers, no retry loops.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') ensureActivePlayback(activeSceneRef.current);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('pageshow', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('pageshow', onVisible);
+    };
+  }, [reduce]);
 
   // Parallax: background drifts slower than the page, content lifts + fades as you scroll past.
   const { scrollYProgress } = useScroll({
@@ -68,9 +100,29 @@ export default function Hero() {
     };
 
     // The next muted scene is normally ready via preload="auto". If not, hold
-    // the final outgoing frame rather than cutting to black.
+    // the final outgoing frame rather than cutting to black. The error arm
+    // guarantees the transition flag can never stick if the incoming scene
+    // fails — future crossfades stay possible.
     if (incoming.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) beginCrossfade();
-    else incoming.addEventListener('canplay', beginCrossfade, { once: true });
+    else {
+      const onCanPlay = () => {
+        incoming.removeEventListener('error', onError);
+        beginCrossfade();
+      };
+      const onError = () => {
+        incoming.removeEventListener('canplay', onCanPlay);
+        isTransitioningRef.current = false;
+      };
+      incoming.addEventListener('canplay', onCanPlay, { once: true });
+      incoming.addEventListener('error', onError, { once: true });
+    }
+  };
+
+  const handleSceneReady = (id: HeroVideoId) => {
+    setReadyScenes((prev) => markSceneReady(prev, id));
+    // Covers deferred mobile autoplay after reload: the moment the active
+    // scene can play, make sure it actually does.
+    ensureActivePlayback(id);
   };
 
   const handleSceneProgress = (id: HeroVideoId, video: HTMLVideoElement) => {
@@ -118,10 +170,14 @@ export default function Hero() {
             aria-hidden="true"
             onTimeUpdate={(event) => handleSceneProgress(video.id, event.currentTarget)}
             onEnded={() => crossfadeToNextScene(video.id)}
+            onCanPlay={() => handleSceneReady(video.id)}
+            onPlaying={() => handleSceneReady(video.id)}
             // DALI-only mobile framing: the owner performs left-of-center
             // (~1/3 of the 16:9 frame), so a centered portrait crop loses him.
             // Kwamzy and desktop DALI framing are intentionally untouched.
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${video.id === 'dali' ? 'object-[32%_center] sm:object-center' : 'object-center'} ${activeVideo === video.id ? 'opacity-100' : 'opacity-0'}`}
+            // Visibility additionally requires the scene's own readiness so
+            // boot/reload shows the poster — never a black or empty surface.
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${video.id === 'dali' ? 'object-[32%_center] sm:object-center' : 'object-center'} ${isSceneVisuallySafe(activeVideo, video.id, readyScenes) ? 'opacity-100' : 'opacity-0'}`}
           >
             <source src={video.src} type="video/mp4" />
           </video>
